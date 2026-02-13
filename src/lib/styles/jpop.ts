@@ -14,7 +14,15 @@ export const jpop: StyleDef = {
     },
     rhythms: [
         { name: "Driving Anime", length: 16, pattern: [1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0] },
-        { name: "Melodic Stream", length: 16, pattern: [1, 0.5, 1, 0, 1, 0.5, 1, 0, 1, 0.5, 1, 0, 1, 0.5, 1, 0] }
+        { name: "Melodic Stream", length: 16, pattern: [1, 0.5, 1, 0, 1, 0.5, 1, 0, 1, 0.5, 1, 0, 1, 0.5, 1, 0] },
+        {
+            name: "Anime Opening",
+            length: 32,
+            pattern: [
+                1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, // Bar 1: Tresillo-ish
+                1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0  // Bar 2: Fill
+            ]
+        }
     ],
     optimizeVoicing: (notes: number[]) => {
         let voiced = [...notes];

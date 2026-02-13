@@ -14,7 +14,13 @@ export const hyperpop: StyleDef = {
     },
     rhythms: [
         { name: "Glitch 16ths", length: 16, pattern: [1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0] },
-        { name: "Manic", length: 16, pattern: [1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1] }
+        { name: "Manic", length: 16, pattern: [1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1] },
+        {
+            name: "Glitch Stutter",
+            length: 32, // 32 steps of 32nd notes = 16 steps of 16th notes (1 bar) in time, but high res
+            ticksPerStep: 16, // 32nd notes
+            pattern: [1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+        }
     ],
     optimizeVoicing: (notes: number[]) => {
         let voiced = [...notes];

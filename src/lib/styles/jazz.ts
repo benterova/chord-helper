@@ -14,7 +14,15 @@ export const jazz: StyleDef = {
     rhythms: [
         { name: "Charleston", length: 16, pattern: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0] }, // Dot-quarter, eighth
         { name: "Comping 1", length: 16, pattern: [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0] },
-        { name: "Swing 4", length: 16, pattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0] }
+        { name: "Swing 4", length: 16, pattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0] },
+        {
+            name: "Triplet Feel",
+            length: 12, // 12 notes per bar (12/8 feel)
+            ticksPerStep: 43, // 128 PPQ / 3 ~= 42.66. Using 43. 12 * 43 = 516 (approx 512). slightly rush/drag but works for feel.
+            pattern: [
+                1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1 // Ride pattern feel
+            ]
+        }
     ],
     optimizeVoicing: (notes: number[]) => {
         let voiced = [...notes];

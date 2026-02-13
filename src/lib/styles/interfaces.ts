@@ -17,6 +17,7 @@ export interface RhythmPattern {
     name: string;
     length: number;
     pattern: number[];
+    ticksPerStep?: number; // Optional: Default is 16th notes (32 ticks). Use 16 for 32nd notes, etc.
 }
 
 export type TransitionMatrix = Record<number, Record<number, number>>;

@@ -14,7 +14,15 @@ export const future: StyleDef = {
     },
     rhythms: [
         { name: "Wub Sustain", length: 16, pattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0.5, 0, 1, 0, 0, 0] }, // Sidechain feel logic needed given sustain
-        { name: "Super Saw Rhythm", length: 16, pattern: [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0] } // 3-3-2 + extra
+        { name: "Super Saw Rhythm", length: 16, pattern: [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0] }, // 3-3-2 + extra
+        {
+            name: "Future Wobble",
+            length: 32,
+            pattern: [
+                1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0,
+                0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0
+            ]
+        }
     ],
     optimizeVoicing: (notes: number[]) => {
         let voiced = [...notes];

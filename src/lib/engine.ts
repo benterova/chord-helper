@@ -87,34 +87,40 @@ export function applyRhythm(progression: Chord[], style: Style = STYLES.POP, ena
 
     let currentTime = 0;
 
+    // Default 16th note ticks
+    const DEFAULT_TICKS_PER_STEP = TICKS_PER_16TH;
+
     progression.forEach(chord => {
         const rawNotes = getChordMidiNotes(chord, userExtensions);
         const midiNotes = styleDef.optimizeVoicing(rawNotes);
+
+        const stepTicks = rhythm.ticksPerStep || DEFAULT_TICKS_PER_STEP;
 
         // Apply Pattern
         rhythm.pattern.forEach((vel, index) => {
             if (vel > 0) {
                 // Note On
                 // Let's treat current pattern as triggers.
-                // Duration = find next trigger index or end of bar
+                // Duration = find next trigger index or end of pattern
                 let stepsToNext = 1;
                 for (let f = index + 1; f < rhythm.pattern.length; f++) {
                     if (rhythm.pattern[f] > 0) break;
                     stepsToNext++;
                 }
 
-                const noteDuration = stepsToNext * TICKS_PER_16TH;
+                const noteDuration = stepsToNext * stepTicks;
 
                 events.push({
                     notes: midiNotes,
                     velocity: Math.floor(vel * 100), // Scale 0-1 to 0-127 (roughly)
                     duration: noteDuration,
-                    startTime: currentTime + (index * TICKS_PER_16TH)
+                    startTime: currentTime + (index * stepTicks)
                 });
             }
         });
 
-        currentTime += (16 * TICKS_PER_16TH); // Advance 1 bar
+        // Advance by the full pattern length
+        currentTime += (rhythm.length * stepTicks);
     });
 
     return events;
