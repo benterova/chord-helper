@@ -1,5 +1,8 @@
 # Chord & Scale Helper
 
+## AI SLOP WARNING
+## prompted it cause i need it, uayor
+
 A visual, interactive tool for exploring musical scales, modes, and chord progressions. Designed to help musicians and producers create harmonic content quickly.
 
 ## Features
