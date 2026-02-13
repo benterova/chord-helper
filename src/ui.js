@@ -29,6 +29,13 @@ window.ChordApp = window.ChordApp || {};
 
         keySelect.onchange = (e) => onRootChange(e.target.value);
         scaleSelect.onchange = (e) => onModeChange(e.target.value);
+
+        // Create Tooltip Element if not exists
+        if (!document.getElementById('chord-tooltip')) {
+            const tooltip = document.createElement('div');
+            tooltip.id = 'chord-tooltip';
+            document.body.appendChild(tooltip);
+        }
     }
 
     function render(state, chords, onMidiDownload) {
@@ -76,6 +83,37 @@ window.ChordApp = window.ChordApp || {};
             pathEl.setAttribute("stroke", "var(--bg-color)");
             pathEl.setAttribute("stroke-width", "2");
             pathEl.classList.add("sector");
+
+            // Interaction for Tooltip
+            if (chordData) {
+                pathEl.style.cursor = 'pointer'; // Show it's interactive
+
+                pathEl.addEventListener('mouseenter', (e) => {
+                    const tooltip = document.getElementById('chord-tooltip');
+                    if (!tooltip) return;
+
+                    const notes = ChordApp.Theory.getChordNotes(chordData);
+                    tooltip.innerHTML = `<div style="font-weight:bold; margin-bottom:2px;">${chordData.chordName}</div>
+                                         <div style="color:var(--text-secondary); font-size:0.85em;">${notes.join(' - ')}</div>`;
+
+                    tooltip.style.display = 'block';
+                });
+
+                pathEl.addEventListener('mousemove', (e) => {
+                    const tooltip = document.getElementById('chord-tooltip');
+                    if (!tooltip) return;
+
+                    // Position just above/right of cursor using fixed positioning
+                    // Add small offset so mouse isn't covering it
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 15) + 'px';
+                });
+
+                pathEl.addEventListener('mouseleave', () => {
+                    const tooltip = document.getElementById('chord-tooltip');
+                    if (tooltip) tooltip.style.display = 'none';
+                });
+            }
 
             svg.appendChild(pathEl);
 

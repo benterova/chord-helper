@@ -122,6 +122,28 @@ window.ChordApp = window.ChordApp || {};
         return intervals.map(i => rootMidi + i);
     }
 
+    function getChordNotes(chord) {
+        // Re-calculate notes based on intervals and root
+        const rootIndex = NOTES.indexOf(chord.root);
+        if (rootIndex === -1) return [];
+
+        let intervals = [0]; // Root
+        if (chord.intervals) {
+            intervals.push(chord.intervals.third);
+            intervals.push(chord.intervals.fifth);
+            // We could add 7th/9th but usually circle shows triads. 
+            // Let's stick to triad for the basic hover.
+        } else {
+            // Fallback
+            intervals.push(4, 7);
+            if (chord.quality === 'minor') intervals = [0, 3, 7];
+            if (chord.quality === 'dim') intervals = [0, 3, 6];
+            if (chord.quality === 'aug') intervals = [0, 4, 8];
+        }
+
+        return intervals.map(interval => NOTES[(rootIndex + interval) % 12]);
+    }
+
     function generateVariationSequence(indices, chords, useVariation, useExtensions, useVoicing) {
         const selectedChords = indices.map(i => chords[i]);
 
@@ -333,6 +355,7 @@ window.ChordApp = window.ChordApp || {};
         getScaleNotes,
         getChords,
         getChordMidiNotes,
+        getChordNotes,
         generateVariationSequence
     };
 })();

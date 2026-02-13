@@ -343,6 +343,17 @@ svg text {
     border: 1px solid var(--border-color);
 }
 
+#chord-tooltip {
+    position: fixed;
+    /* Changed from absolute to fixed for easier viewport positioning */
+    top: 0;
+    padding: 0.5em;
+    left: 0;
+    background: rgba(20, 20, 30, 0.98);
+    z-index: 1000;
+    /* Ensure it's above other content */
+}
+
 .slider:before {
     position: absolute;
     content: "";
