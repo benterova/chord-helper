@@ -37,12 +37,13 @@ window.ChordApp = window.ChordApp || {};
     };
 
     // Common Progressions for demo purposes
+    // NOTE: Uses 'indices' array (0-based scale degree index) for compatibility
     const PROGRESSIONS = {
         ionian: [
-            { name: "Pop Changes", sequence: ["I", "V", "vi", "IV"], genre: "Pop" },
-            { name: "Jazz Turnaround", sequence: ["ii", "V", "I", "vi"], genre: "Jazz" },
-            { name: "Doo-Wop", sequence: ["I", "vi", "IV", "V"], genre: "Oldies" },
-            { name: "Canon", sequence: ["I", "V", "vi", "iii", "IV", "I", "IV", "V"], genre: "Classical" }
+            { name: "Pop Changes", indices: [0, 4, 5, 3], genre: "Pop" },
+            { name: "Jazz Turnaround", indices: [1, 4, 0, 5], genre: "Jazz" },
+            { name: "Doo-Wop", indices: [0, 5, 3, 4], genre: "Oldies" },
+            { name: "Canon", indices: [0, 4, 5, 2, 3, 0, 3, 4], genre: "Classical" }
         ],
         dorian: [
             { name: 'So What (i-VII)', genre: 'Jazz', indices: [0, 6] },
@@ -59,30 +60,30 @@ window.ChordApp = window.ChordApp || {};
             { name: 'Classic Rock (I-bVII-IV)', genre: 'Rock', indices: [0, 6, 3] }
         ],
         natural_minor: [
-            { name: "Pop Minor", sequence: ["i", "VI", "III", "VII"], genre: "Pop" },
-            { name: "Sad Ballad", sequence: ["i", "iv", "VI", "V"], genre: "Ballad" },
-            { name: "Andalucian", sequence: ["i", "VII", "VI", "V"], genre: "Flamenco" }
+            { name: "Pop Minor", indices: [0, 5, 2, 6], genre: "Pop" },
+            { name: "Sad Ballad", indices: [0, 3, 5, 4], genre: "Ballad" },
+            { name: "Andalucian", indices: [0, 6, 5, 4], genre: "Flamenco" }
         ],
         locrian: [
             { name: 'Locrian Tension (i-bII)', genre: 'Dark', indices: [0, 1] }
         ],
         harmonic_minor: [
-            { name: "Classical Minor", sequence: ["i", "iv", "V", "i"], genre: "Classical" },
-            { name: "Vamp", sequence: ["i", "V"], genre: "Latin" }
+            { name: "Classical Minor", indices: [0, 3, 4, 0], genre: "Classical" },
+            { name: "Vamp", indices: [0, 4], genre: "Latin" }
         ],
         melodic_minor: [
-            { name: "Jazz Minor", sequence: ["i", "ii", "V", "i"], genre: "Jazz" }
+            { name: "Jazz Minor", indices: [0, 1, 4, 0], genre: "Jazz" }
         ],
         major_pentatonic: [
-            { name: "Country Road", sequence: [0, 4, 3, 0], genre: "Country" }, // C, A, G, C
-            { name: "Simple Myx", sequence: [0, 1, 2, 0], genre: "Folk" }
+            { name: "Country Road", indices: [0, 4, 3, 0], genre: "Country" }, // C, A, G, C
+            { name: "Simple Myx", indices: [0, 1, 2, 0], genre: "Folk" }
         ],
         minor_pentatonic: [
-            { name: "Rock Riff", sequence: [0, 2, 3, 0], genre: "Rock" }, // A, D, E, A
-            { name: "Groove", sequence: [0, 4, 3, 0], genre: "Funk" }
+            { name: "Rock Riff", indices: [0, 2, 3, 0], genre: "Rock" }, // A, D, E, A
+            { name: "Groove", indices: [0, 4, 3, 0], genre: "Funk" }
         ],
         blues: [
-            { name: "12-Bar Blues", sequence: [0, 3, 4], genre: "Blues" } // Simplified for now
+            { name: "12-Bar Blues", indices: [0, 3, 4], genre: "Blues" } // Simplified for now
         ]
     };
 

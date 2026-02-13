@@ -51,6 +51,10 @@ window.ChordApp = window.ChordApp || {};
     }
 
     function render(state, chords, onMidiDownload) {
+        if (!chords || !Array.isArray(chords)) {
+            console.warn("Render called with invalid chords", chords);
+            return;
+        }
         renderCircle(state, chords);
         renderScaleDegrees(chords);
         renderChordsList(chords);
@@ -60,6 +64,8 @@ window.ChordApp = window.ChordApp || {};
     function renderCircle(state, chords) {
         const container = document.getElementById('circle-container');
         container.innerHTML = '';
+
+        if (!chords) return;
 
         const size = 500;
         const center = size / 2;
@@ -176,10 +182,6 @@ window.ChordApp = window.ChordApp || {};
 
         const { MODE_DISPLAY_NAMES } = ChordApp.Constants;
         const modeName = MODE_DISPLAY_NAMES[state.mode] || state.mode;
-
-        // If the name is long (e.g. "Harmonic Minor"), maybe split it?
-        // For now, let's just show it. 
-        // We might want to remove the redundant "Scale" or "Mode" if present, but standard names are fine.
 
         centerText.textContent = `${state.root} ${modeName}`;
         svg.appendChild(centerText);
