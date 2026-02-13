@@ -41,18 +41,16 @@ window.ChordApp = window.ChordApp || {};
             let romanCase = 'lower'; // default
             let symbol = '';
 
-            // Major Triad
+            // Check Triads & Extended
             if (distThird === 4 && distFifth === 7) {
                 quality = 'major';
                 romanCase = 'upper';
             }
-            // Minor Triad
             else if (distThird === 3 && distFifth === 7) {
                 quality = 'minor';
                 suffix = 'm';
                 romanCase = 'lower';
             }
-            // Diminished Triad
             else if (distThird === 3 && distFifth === 6) {
                 quality = 'dim';
                 suffix = 'dim';

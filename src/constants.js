@@ -46,8 +46,8 @@ window.ChordApp = window.ChordApp || {};
         ],
         dorian: [
             { name: 'So What (i-VII)', genre: 'Jazz', indices: [0, 6] },
-            { name: 'Dorian Vamp (i-IV)', genre: 'Funk', indices: [0, 3] },
-            { name: 'Funk Groove (i-IV)', genre: 'Funk', indices: [0, 3] }
+            { name: 'Santana (i-IV)', genre: 'Rock', indices: [0, 3] },
+            { name: 'Funk Groove (i-IV-i-VII)', genre: 'Funk', indices: [0, 3, 0, 6] }
         ],
         phrygian: [
             { name: 'Phrygian Vamp (i-II)', genre: 'Metal', indices: [0, 1] }
@@ -59,12 +59,30 @@ window.ChordApp = window.ChordApp || {};
             { name: 'Classic Rock (I-bVII-IV)', genre: 'Rock', indices: [0, 6, 3] }
         ],
         aeolian: [
-            { name: 'Andalusian (i-VII-VI-V)', genre: 'Flamenco', indices: [0, 6, 5, 4] },
-            { name: 'Plagal (i-iv-i)', genre: 'Hymn', indices: [0, 3, 0] },
-            { name: 'ii-V-i (Jazz Minor)', genre: 'Jazz', indices: [1, 4, 0] }
+            { name: "Pop Minor", sequence: ["i", "VI", "III", "VII"], genre: "Pop" },
+            { name: "Sad Ballad", sequence: ["i", "iv", "VI", "V"], genre: "Ballad" },
+            { name: "Andalucian", sequence: ["i", "VII", "VI", "V"], genre: "Flamenco" }
         ],
         locrian: [
             { name: 'Locrian Tension (i-bII)', genre: 'Dark', indices: [0, 1] }
+        ],
+        harmonic_minor: [
+            { name: "Classical Minor", sequence: ["i", "iv", "V", "i"], genre: "Classical" },
+            { name: "Vamp", sequence: ["i", "V"], genre: "Latin" }
+        ],
+        melodic_minor: [
+            { name: "Jazz Minor", sequence: ["i", "ii", "V", "i"], genre: "Jazz" }
+        ],
+        major_pentatonic: [
+            { name: "Country Road", sequence: [0, 4, 3, 0], genre: "Country" }, // C, A, G, C
+            { name: "Simple Myx", sequence: [0, 1, 2, 0], genre: "Folk" }
+        ],
+        minor_pentatonic: [
+            { name: "Rock Riff", sequence: [0, 2, 3, 0], genre: "Rock" }, // A, D, E, A
+            { name: "Groove", sequence: [0, 4, 3, 0], genre: "Funk" }
+        ],
+        blues: [
+            { name: "12-Bar Blues", sequence: [0, 3, 4], genre: "Blues" } // Simplified for now
         ]
     };
 
