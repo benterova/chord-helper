@@ -1,26 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { STYLES, type Style, generateProgression, applyRhythm, type MidiEvent } from '../lib/engine';
 import { downloadGeneratedMidi } from '../lib/midi';
 import type { Chord } from '../lib/theory';
 import { audioEngine } from '../lib/audio';
+import useLocalStorage from '../hooks/useLocalStorage';
 
 interface GeneratorProps {
     root: string;
     mode: string;
 }
 
+interface SavedProgression {
+    id: string;
+    name: string;
+    timestamp: number;
+    chords: Chord[];
+    events: MidiEvent[];
+    root: string;
+    mode: string;
+    style: Style;
+}
+
 export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
+    // Core State
     const [style, setStyle] = useState<Style>(STYLES.POP);
     const [length, setLength] = useState(4);
     const [enableRhythm, setEnableRhythm] = useState(true);
 
     const [generatedProgression, setGeneratedProgression] = useState<Chord[] | null>(null);
     const [generatedEvents, setGeneratedEvents] = useState<MidiEvent[] | null>(null);
+
+    // Playback State
     const [playingId, setPlayingId] = useState<string | null>(null);
+
+    // Saved Progressions State
+    const [savedProgressions, setSavedProgressions] = useLocalStorage<SavedProgression[]>('saved_progressions', []);
+    const [isSavedOpen, setIsSavedOpen] = useState(false); // Accordion state
 
     React.useEffect(() => {
         return audioEngine.subscribe(id => setPlayingId(id));
     }, []);
+
+    // 1. Auto-Generate on Mount and Root/Mode Change
+    useEffect(() => {
+        handleGenerate();
+    }, [root, mode]);
+
+    // 2. React to Rhythm Toggle (without changing chords)
+    useEffect(() => {
+        if (generatedProgression) {
+            const events = applyRhythm(generatedProgression, style, enableRhythm);
+            setGeneratedEvents(events);
+        }
+    }, [enableRhythm]);
 
     const handleGenerate = () => {
         const progression = generateProgression(root, mode as any, { style, length });
@@ -29,81 +61,57 @@ export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
         setGeneratedEvents(events);
     };
 
-    const handleDownload = () => {
+    const handleSave = () => {
         if (!generatedProgression || !generatedEvents) return;
-        const name = generatedProgression.map(c => c.chordName).join('-');
-        downloadGeneratedMidi(name, generatedEvents, root, mode, style);
+
+        const newProgression: SavedProgression = {
+            id: crypto.randomUUID(),
+            name: `${root} ${mode} ${style} - ${new Date().toLocaleTimeString()}`,
+            timestamp: Date.now(),
+            chords: generatedProgression,
+            events: generatedEvents,
+            root,
+            mode,
+            style
+        };
+
+        setSavedProgressions([newProgression, ...savedProgressions]);
+        setIsSavedOpen(true); // Auto-open to show success
     };
 
-    const handlePlay = () => {
-        if (playingId === 'generator') {
+    const handleDelete = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setSavedProgressions(savedProgressions.filter(p => p.id !== id));
+    };
+
+    const handleDownload = (progression: { events: MidiEvent[]; root: string; mode: string; style: Style; chords: Chord[] }) => {
+        if (!progression.events) return;
+        const name = progression.chords.map(c => c.chordName).join('-');
+        downloadGeneratedMidi(name, progression.events, progression.root, progression.mode, progression.style);
+    };
+
+    const handlePlay = (id: string, events: MidiEvent[]) => {
+        if (playingId === id) {
             audioEngine.stop();
             return;
         }
 
-        if (!generatedEvents) return;
-
-        // Convert to AudioEngine format
-        // Audio engine expects seconds, MidiEvent inside engine.ts uses 128 ticks per beat
-        // 120 BPM = 0.5s per beat = 128 ticks
-        // Ticks to Seconds = (ticks / 128) * 0.5
-
+        // Conversion Logic (same as before)
         const secondsPerTick = 0.5 / 128;
-
-        // We need to flatten the events into a sequence where we wait for gaps
-        // Actually, AudioEngine logic is "Next item plays after Current item duration"
-        // But the generated events have 'startTime' and 'duration'.
-        // We need to adapt this.
-        // The simple AudioEngine loop expects a sequence of blocks.
-        // The generator output is a list of events with absolute start times.
-
-        // Complex Solution: Update AudioEngine to take absolute events.
-        // Simple Solution: Convert absolute events to a sequential blocks list?
-        // No, overlapping notes (polyphony during same beat) won't work well with simple "queue".
-
-        // BETTER: Update AudioEngine to support "Score" playback?
-        // OR: Just schedule all events now using `playNotes` with time offset?
-        // But then `stop()` needs to work.
-        // `playNotes` uses `scheduleNotes`.
-
-        // Let's implement a `playScore` method in AudioEngine or just loop here scheduling them?
-        // If we schedule them all at once, `stop()` on AudioEngine handles clearing them!
-        // We just need to calculate the relative time for each.
-
-
-        // Stop previous
-        audioEngine.stop();
-
-        // Manually schedule all events
-        // Let's rely on the simple AudioEngine for now, which might be limited.
-        // Only way with current API:
-        // `playProgression` takes a sequence of `{notes, duration}`.
-        // If the generated rhythm is monophonic (chord blocks), we can convert it.
-        // `applyRhythm` returns `MidiEvent[]` with keys `notes`, `duration`, `startTime`.
-        // It seems `applyRhythm` output is essentially a track.
-
-        // Let's try to convert it to a sequence map if it's sequential.
-        // If there are gaps, we need silent spacers.
-
-        // Sort by start time
-        const sorted = [...generatedEvents].sort((a, b) => a.startTime - b.startTime);
+        const sorted = [...events].sort((a, b) => a.startTime - b.startTime);
         const sequence: { notes: number[], duration: number }[] = [];
 
         let lastEnd = 0;
         sorted.forEach(ev => {
             const gap = ev.startTime - lastEnd;
             if (gap > 0) {
-                // Pause / Silence
-                // AudioEngine doesn't have explicit rest support in type?
-                // It plays notes. Empty notes array = silence?
                 sequence.push({ notes: [], duration: gap * secondsPerTick });
             }
-
             sequence.push({ notes: ev.notes, duration: ev.duration * secondsPerTick });
             lastEnd = ev.startTime + ev.duration;
         });
 
-        audioEngine.playProgression(sequence, 'generator');
+        audioEngine.playProgression(sequence, id);
     };
 
     const styleLabels: Record<string, string> = {
@@ -165,24 +173,105 @@ export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
                 </div>
             )}
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
                 <button
-                    onClick={handlePlay}
+                    onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
                     disabled={!generatedEvents}
                     className="midi-btn"
-                    title="Preview in Browser"
                     style={playingId === 'generator' ? { background: '#ef233c', color: 'white' } : {}}
                 >
                     {playingId === 'generator' ? '⏹ Stop' : '▶ Play'}
                 </button>
                 <button
-                    onClick={handleDownload}
+                    onClick={handleSave}
+                    disabled={!generatedProgression}
+                    className="midi-btn"
+                    title="Save to list"
+                >
+                    💾 Save
+                </button>
+                <button
+                    onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
                     disabled={!generatedProgression}
                     className="midi-btn primary"
                     style={{ width: '100%', backgroundColor: generatedProgression ? 'var(--primary-color, #3a86ff)' : undefined }}
                 >
-                    Download Generated MIDI
+                    Download MIDI
                 </button>
+            </div>
+
+            {/* Saved Progressions Accordion */}
+            <div className="saved-progressions">
+                <button
+                    className="accordion-header"
+                    onClick={() => setIsSavedOpen(!isSavedOpen)}
+                    style={{
+                        width: '100%',
+                        padding: '1rem',
+                        background: 'var(--surface-color)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '1rem'
+                    }}
+                >
+                    <span>Saved Progressions ({savedProgressions.length})</span>
+                    <span>{isSavedOpen ? '▼' : '▶'}</span>
+                </button>
+
+                {isSavedOpen && (
+                    <div className="saved-list" style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {savedProgressions.length === 0 && <div style={{ padding: '1rem', textAlign: 'center', opacity: 0.6 }}>No saved progressions yet.</div>}
+
+                        {savedProgressions.map(prog => (
+                            <div key={prog.id} className="saved-item" style={{
+                                padding: '1rem',
+                                background: 'rgba(255,255,255,0.05)',
+                                borderRadius: '6px',
+                                border: '1px solid var(--border-color)'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                    <div style={{ fontWeight: 600 }}>{prog.name}</div>
+                                    <div style={{ fontSize: '0.8em', opacity: 0.6 }}>{new Date(prog.timestamp).toLocaleDateString()}</div>
+                                </div>
+
+                                <div style={{ fontSize: '0.9em', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+                                    {prog.chords.map(c => c.chordName).join(' - ')}
+                                </div>
+
+                                <div className="saved-actions" style={{ display: 'flex', gap: '8px' }}>
+                                    <button
+                                        onClick={() => handlePlay(prog.id, prog.events)}
+                                        className="midi-btn small"
+                                        style={playingId === prog.id ? { background: '#ef233c', color: 'white', fontSize: '0.8rem', padding: '4px 8px' } : { fontSize: '0.8rem', padding: '4px 8px' }}
+                                    >
+                                        {playingId === prog.id ? '⏹' : '▶'}
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownload(prog)}
+                                        className="midi-btn small"
+                                        style={{ fontSize: '0.8rem', padding: '4px 8px' }}
+                                    >
+                                        ⬇ MIDI
+                                    </button>
+                                    <button
+                                        onClick={(e) => handleDelete(prog.id, e)}
+                                        className="midi-btn small"
+                                        style={{ fontSize: '0.8rem', padding: '4px 8px', marginLeft: 'auto', background: 'transparent', color: '#ff4d4d', border: '1px solid #ff4d4d' }}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
