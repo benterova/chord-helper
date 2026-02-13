@@ -1,0 +1,370 @@
+:root {
+    --bg-color: #121212;
+    --surface-color: #1e1e1e;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --accent-color: #BB86FC;
+    --border-color: #333333;
+
+    /* Chord Quality Colors */
+    --major-color: #03DAC6;
+    /* Cyan */
+    --minor-color: #CF6679;
+    /* Pink/Red */
+    --dim-color: #FFB74D;
+    /* Orange */
+    --aug-color: #FF80AB;
+    /* Pink Accent */
+    --inactive-color: #2C2C2C;
+
+    --font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+h1 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+h2 {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.controls {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+select {
+    background-color: var(--surface-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-family: var(--font-family);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+main {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+    flex: 1;
+    align-items: start;
+    /* Prevent stretching */
+}
+
+.main-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Circle Section */
+.circle-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 2rem;
+    min-height: 500px;
+}
+
+.circle-container {
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1/1;
+}
+
+/* Legend */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    width: 100%;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-color.major {
+    background-color: var(--major-color);
+}
+
+.legend-color.minor {
+    background-color: var(--minor-color);
+}
+
+.legend-color.dim {
+    background-color: var(--dim-color);
+}
+
+.legend-color.aug {
+    background-color: var(--aug-color);
+}
+
+/* Details Panel */
+.details-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.panel-section {
+    background-color: var(--surface-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+/* Scale Degrees */
+.scale-degrees {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.note-badge {
+    background-color: var(--bg-color);
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 30px;
+}
+
+.note-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.note-degree {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Chords List */
+.chords-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chord-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: var(--bg-color);
+    border-radius: 4px;
+    border-left: 4px solid var(--inactive-color);
+}
+
+.chord-item.major {
+    border-left-color: var(--major-color);
+}
+
+.chord-item.minor {
+    border-left-color: var(--minor-color);
+}
+
+.chord-item.dim {
+    border-left-color: var(--dim-color);
+}
+
+.chord-name {
+    font-weight: 600;
+}
+
+.chord-roman {
+    color: var(--text-secondary);
+}
+
+/* Progressions */
+.progressions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.progression-item {
+    background-color: var(--bg-color);
+    padding: 1rem;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.prog-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.midi-btn {
+    background-color: var(--surface-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.2s;
+}
+
+.midi-btn:hover {
+    background-color: var(--border-color);
+}
+
+.prog-name {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.prog-chords {
+    font-weight: 600;
+    display: flex;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+}
+
+/* SVG Styles */
+svg text {
+    font-family: var(--font-family);
+    user-select: none;
+}
+
+.sector {
+    cursor: pointer;
+    transition: fill 0.3s ease;
+}
+
+.sector:hover {
+    opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+
+    /* Genre Badge */
+    .genre-badge {
+        background-color: var(--accent-color);
+        color: #000;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background-color: var(--inactive-color);
+    border-radius: 20px;
+    transition: .4s;
+    margin-right: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--text-secondary);
+    border-radius: 50%;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+input:checked+.slider:before {
+    transform: translateX(16px);
+    background-color: #000;
+}
+
+.toggle-label {
+    user-select: none;
+}
