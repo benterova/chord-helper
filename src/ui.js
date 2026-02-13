@@ -74,9 +74,13 @@ window.ChordApp = window.ChordApp || {};
                 <label>
                     Style:
                     <select id="gen-style">
-                        <option value="pop">Pop</option>
-                        <option value="jazz">Jazz</option>
-                        <option value="dark">Dark</option>
+                        ${Object.values(STYLES).map(style => {
+            let label = style.charAt(0).toUpperCase() + style.slice(1);
+            if (style === 'rnb') label = 'R&B';
+            if (style === 'lofi') label = 'Lo-Fi';
+            if (style === 'bossa') label = 'Bossa Nova';
+            return `<option value="${style}">${label}</option>`;
+        }).join('')}
                     </select>
                 </label>
                 <label>
