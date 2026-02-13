@@ -16,6 +16,10 @@ export class AudioEngineImpl {
     private playingId: string | null = null;
     private listeners: ((playingId: string | null) => void)[] = [];
 
+    // Metronome state
+    private bpm: number = 120;
+    private nextBeatTime: number = 0;
+
     constructor() {
         const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
         this.ctx = new AudioContextClass();
@@ -27,6 +31,10 @@ export class AudioEngineImpl {
         this.metronomeGain = this.ctx.createGain();
         this.metronomeGain.gain.value = 0; // Default off
         this.metronomeGain.connect(this.ctx.destination);
+    }
+
+    public setBpm(bpm: number) {
+        this.bpm = bpm;
     }
 
     public subscribe(callback: (playingId: string | null) => void) {
@@ -85,17 +93,19 @@ export class AudioEngineImpl {
         this.scheduleNotes(notes, duration, this.ctx.currentTime);
     }
 
-    public playProgression(sequence: { notes: number[], duration: number }[], id?: string) {
+    public playProgression(sequence: { notes: number[], duration: number }[], id?: string, bpm: number = 120) {
         this.stop(); // Stops previous and notifies null
         if (this.ctx.state === 'suspended') this.ctx.resume();
 
         this.isPlaying = true;
         this.playingId = id || 'unknown';
+        this.bpm = bpm;
         this.notify();
 
         this.playbackQueue = [...sequence];
         this.originalSequence = [...sequence];
         this.nextNoteTime = this.ctx.currentTime;
+        this.nextBeatTime = this.ctx.currentTime;
         this.scheduler();
     }
 
@@ -105,6 +115,7 @@ export class AudioEngineImpl {
         const lookahead = 25.0; // ms
         const scheduleAheadTime = 0.1; // seconds
 
+        // 1. Schedule Notes
         while (this.nextNoteTime < this.ctx.currentTime + scheduleAheadTime && this.playbackQueue.length > 0) {
             const currentItem = this.playbackQueue.shift();
             if (!currentItem) break;
@@ -113,16 +124,26 @@ export class AudioEngineImpl {
             const time = this.nextNoteTime;
 
             // Schedule Chord
-            this.scheduleNotes(currentItem.notes, duration, time, true); // track nodes
-
-            // Schedule Metronome (assuming 4/4, 4 beats per chord duration)
-            const beats = 4;
-            const beatDur = duration / beats;
-            for (let i = 0; i < beats; i++) {
-                this.scheduleMetronomeClick(time + (i * beatDur), i === 0);
+            if (currentItem.notes.length > 0) {
+                this.scheduleNotes(currentItem.notes, duration, time, true);
             }
 
             this.nextNoteTime += duration;
+        }
+
+        // 2. Schedule Metronome (Decoupled)
+        // Only schedule if we are still playing or have notes queued
+        // or if we are looping.
+        while (this.nextBeatTime < this.ctx.currentTime + scheduleAheadTime) {
+            // Schedule beat
+            // Beat 1 is usually accented. Tracking measure position requires more state.
+            // For now, simple steady click.
+            // Improve: Reset beat count on Play? 
+
+            this.scheduleMetronomeClick(this.nextBeatTime, false); // No accent logic for now to keep simple
+
+            const secondsPerBeat = 60.0 / this.bpm;
+            this.nextBeatTime += secondsPerBeat;
         }
 
         // Handle Looping
@@ -130,9 +151,20 @@ export class AudioEngineImpl {
             this.playbackQueue = [...this.originalSequence];
         }
 
-        if (this.playbackQueue.length > 0 || this.nextNoteTime >= this.ctx.currentTime) {
+        // Keep running if:
+        // 1. Queue has items
+        // 2. OR Loop is enabled (even if queue empty, we just refilled it? wait, refilling prevents empty)
+        // 3. OR current notes are still playing? 
+        // Actually, if queue is empty and NOT looping, we should stop eventually.
+        // But we want metronome to run until the end of the last note.
+
+        const isQueueActive = this.playbackQueue.length > 0 || this.nextNoteTime >= this.ctx.currentTime;
+
+        if (isQueueActive) {
             this.schedulerInterval = window.setTimeout(() => this.scheduler(), lookahead);
         } else {
+            // Stop after last note finishes?
+            // Let's optimize: stop when time > nextNoteTime (end of song)
             this.isPlaying = false;
             this.playingId = null;
             this.notify();
