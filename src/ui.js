@@ -79,6 +79,9 @@ window.ChordApp = window.ChordApp || {};
             if (style === 'rnb') label = 'R&B';
             if (style === 'lofi') label = 'Lo-Fi';
             if (style === 'bossa') label = 'Bossa Nova';
+            if (style === 'jpop') label = 'J-Pop';
+            if (style === 'hyperpop') label = 'Hyperpop';
+            if (style === 'future') label = 'Future Bass';
             return `<option value="${style}">${label}</option>`;
         }).join('')}
                     </select>
@@ -88,7 +91,14 @@ window.ChordApp = window.ChordApp || {};
                     <select id="gen-length">
                         <option value="4">4 Bars</option>
                         <option value="8">8 Bars</option>
+                        <option value="16">16 Bars (Long)</option>
+                        <option value="32">32 Bars (Huge)</option>
+                        <option value="64">64 Bars (Epic)</option>
                     </select>
+                </label>
+                <label style="display:flex; align-items:center; cursor:pointer;">
+                    <input type="checkbox" id="gen-rhythm" checked style="margin-right:5px;">
+                    Enable Rhythm
                 </label>
                 <button id="btn-generate" class="midi-btn" style="background:var(--accent-color);">Generate New</button>
             </div>
@@ -110,9 +120,10 @@ window.ChordApp = window.ChordApp || {};
             // Let's store latest state in a closure var or read DOM.
             const currentRoot = document.getElementById('key-select').value;
             const currentMode = document.getElementById('scale-type-select').value;
+            const enableRhythm = document.getElementById('gen-rhythm').checked;
 
             const progression = generateProgression(currentRoot, currentMode, { style, length });
-            const events = applyRhythm(progression, style);
+            const events = applyRhythm(progression, style, enableRhythm);
 
             renderGeneratedResult(progression, events, style, currentRoot, currentMode);
         };

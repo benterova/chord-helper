@@ -16,6 +16,9 @@ window.ChordApp = window.ChordApp || {};
         EPIC: 'epic',
         BOSSA: 'bossa',
         FOLK: 'folk',
+        HYPERPOP: 'hyperpop',
+        JPOP: 'jpop',
+        FUTURE: 'future',
         DARK: 'dark'
     };
 
@@ -98,6 +101,36 @@ window.ChordApp = window.ChordApp || {};
             5: { 3: 0.5, 0: 0.3, 4: 0.2 },                  // vi -> IV, I
             1: { 4: 0.8, 0: 0.2 }
         },
+        [STYLES.HYPERPOP]: {
+            // Chaos but rooted in Pop. I-vi-IV-V but fast.
+            0: { 5: 0.3, 3: 0.3, 4: 0.2, 1: 0.2 },
+            3: { 0: 0.4, 4: 0.4, 1: 0.2 },
+            4: { 0: 0.6, 5: 0.4 },
+            5: { 3: 0.5, 1: 0.3, 4: 0.2 },
+            // Hyperpop likes modal interchange/chromaticism but for this matrix we stick to diatonic
+            1: { 4: 0.7, 6: 0.3 },
+            6: { 0: 0.5, 2: 0.5 }
+        },
+        [STYLES.JPOP]: {
+            // Royal Road (IV-V-iii-vi) = 3 -> 4 -> 2 -> 5
+            0: { 3: 0.4, 4: 0.2, 5: 0.2, 1: 0.2 },
+            3: { 4: 0.6, 0: 0.2, 1: 0.2 },                  // IV -> V (strongest in Jpop)
+            4: { 2: 0.5, 0: 0.3, 5: 0.2 },                  // V -> iii (Royal Road)
+            2: { 5: 0.8, 0: 0.1, 1: 0.1 },                  // iii -> vi (Royal Road)
+            5: { 3: 0.4, 1: 0.4, 4: 0.2 },                  // vi -> IV (Komuro), ii
+            1: { 4: 0.8, 0: 0.2 },
+            6: { 2: 0.5, 0: 0.5 }
+        },
+        [STYLES.FUTURE]: {
+            // Kawaii Future Bass: IV-V-iii-vi heavily used too. Lydian (IV start) focus.
+            0: { 3: 0.5, 4: 0.3, 5: 0.2 },
+            3: { 4: 0.6, 0: 0.2, 1: 0.2 },
+            4: { 2: 0.5, 0: 0.4, 5: 0.1 },
+            2: { 5: 0.8, 3: 0.2 },
+            5: { 3: 0.5, 1: 0.3, 4: 0.2 },
+            1: { 4: 0.8, 6: 0.2 },
+            6: { 0: 0.5, 2: 0.5 }
+        },
         [STYLES.DARK]: {
             0: { 5: 0.4, 2: 0.3, 1: 0.3 }, // Favor minor movements
             1: { 4: 0.5, 6: 0.5 },
@@ -153,6 +186,18 @@ window.ChordApp = window.ChordApp || {};
         [STYLES.FOLK]: [
             { name: "Strum 1", length: 16, pattern: [1, 0, 0.6, 0, 1, 0, 0.6, 0, 1, 0, 0.6, 0, 1, 0, 0.6, 0] },
             { name: "Fingerstyle", length: 16, pattern: [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0] }
+        ],
+        [STYLES.HYPERPOP]: [
+            { name: "Glitch 16ths", length: 16, pattern: [1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0] },
+            { name: "Manic", length: 16, pattern: [1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1] }
+        ],
+        [STYLES.JPOP]: [
+            { name: "Driving Anime", length: 16, pattern: [1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0] },
+            { name: "Melodic Stream", length: 16, pattern: [1, 0.5, 1, 0, 1, 0.5, 1, 0, 1, 0.5, 1, 0, 1, 0.5, 1, 0] }
+        ],
+        [STYLES.FUTURE]: [
+            { name: "Wub Sustain", length: 16, pattern: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0.5, 0, 1, 0, 0, 0] }, // Sidechain feel logic needed given sustain
+            { name: "Super Saw Rhythm", length: 16, pattern: [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0] } // 3-3-2 + extra
         ]
     };
 
@@ -232,6 +277,17 @@ window.ChordApp = window.ChordApp || {};
             // If triad (1, 3, 5), maybe drop the 3rd or move it up?
             // Actually, keep it simple for now, just ensure root is grounded.
             if (voiced[0] > 50) voiced[0] -= 12;
+        } else if (style === STYLES.FUTURE || style === STYLES.JPOP || style === STYLES.HYPERPOP) {
+            // Big Stacks. J-Pop loves piano voicings (Left Hand Octaves, Right Hand shell+melody).
+            // Future Bass loves "Super Saws" - essentially 7th/9th chords clustered in mid-high register + Bass.
+
+            // Drop Root 1 octave
+            if (voiced[0] > 48) voiced[0] -= 12;
+
+            // Ensure we have a high "sheen" (if only 3 notes, duplicate root or 5th up)
+            if (voiced.length < 4) {
+                voiced.push(voiced[0] + 24); // Add 2 octaves up root
+            }
         }
 
         return voiced.sort((a, b) => a - b);
@@ -271,19 +327,30 @@ window.ChordApp = window.ChordApp || {};
     }
 
     /**
-     * Converts a chord progression into a timed MIDI event sequence.
-     * ...
+     *   **Rock**: Straight 8ths, driving.
+     *   **Hyperpop**: Glitchy, fast 16ths, chaotic rests.
+     *   **J-Pop**: Driving but syncopated 16th streams.
+     *   **Future Bass**: "Wub" chords (sustain with gaps, or dotted 8th note stabs).
+     *   **Bossa**: Clave-based, syncopated bass.
+     *   **Folk**: Strumming patterns (Root-strum-strum).
      */
-    function applyRhythm(progression, style = STYLES.POP) {
+    function applyRhythm(progression, style = STYLES.POP, enableRhythm = true) {
         const events = [];
         const PPQ = 128;
         const TICKS_PER_16TH = PPQ / 4;
 
-        const rhythmPool = RHYTHMS[style] || RHYTHMS[STYLES.POP];
+        let rhythmPool = RHYTHMS[style] || RHYTHMS[STYLES.POP];
+
+        // If rhythm is disabled, override with a simple Whole Note pattern
+        if (!enableRhythm) {
+            rhythmPool = [{ name: "Sustained", length: 16, pattern: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }];
+        }
+
         const rhythm = getRandomElement(rhythmPool);
 
         let userExtensions = { extensions: false, variation: false };
-        if (style === STYLES.JAZZ || style === STYLES.RNB || style === STYLES.LOFI || style === STYLES.BOSSA) {
+        if (style === STYLES.JAZZ || style === STYLES.RNB || style === STYLES.LOFI ||
+            style === STYLES.BOSSA || style === STYLES.FUTURE || style === STYLES.JPOP || style === STYLES.HYPERPOP) {
             userExtensions.extensions = true;
         }
 
