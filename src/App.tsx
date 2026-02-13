@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Layout } from './components/Layout';
 import { Header } from './components/Header';
 import { Controls } from './components/Controls';
@@ -7,7 +7,6 @@ import { ProgressionList } from './components/ProgressionList';
 import { ScaleDetails } from './components/ScaleDetails';
 import { Generator } from './components/Generator';
 import { getChords } from './lib/theory';
-import { audioEngine } from './lib/audio';
 import type { ScaleName } from './lib/constants';
 import './index.css';
 

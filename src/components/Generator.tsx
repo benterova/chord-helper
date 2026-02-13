@@ -49,7 +49,6 @@ export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
         // Ticks to Seconds = (ticks / 128) * 0.5
 
         const secondsPerTick = 0.5 / 128;
-        const speedFactor = 1.0; // Normal tempo
 
         // We need to flatten the events into a sequence where we wait for gaps
         // Actually, AudioEngine logic is "Next item plays after Current item duration"
@@ -71,7 +70,6 @@ export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
         // If we schedule them all at once, `stop()` on AudioEngine handles clearing them!
         // We just need to calculate the relative time for each.
 
-        const now = audioEngine.getCurrentTime();
 
         // Stop previous
         audioEngine.stop();
