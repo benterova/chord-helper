@@ -1,110 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chord & Scale Helper</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div class="app-container">
-        <header>
-            <h1>Chord & Scale Helper</h1>
-            <div class="controls">
-                <div class="control-group">
-                    <label for="key-select">Key</label>
-                    <select id="key-select">
-                        <!-- Options populated by JS -->
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="scale-type-select">Scale</label>
-                    <select id="scale-type-select"></select>
-                </div>
-            </div>
-        </header>
-
-        <main>
-            <div class="main-column">
-                <section class="circle-section">
-                    <div class="circle-container" id="circle-container">
-                        <!-- SVG Circle injected here -->
-                    </div>
-                    <div class="legend">
-                        <div class="legend-item">
-                            <span class="legend-color major"></span>
-                            <span>Major</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color minor"></span>
-                            <span>Minor</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color dim"></span>
-                            <span>Diminished</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color aug"></span>
-                            <span>Augmented</span>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="progressions-section"
-                    style="background-color: var(--surface-color); padding: 1.5rem; border-radius: 12px; margin-top: 2rem;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h2 style="margin:0">Example Progressions</h2>
-                        <div style="display: flex; gap: 15px;">
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="extension-toggle">
-                                <span class="slider"></span>
-                                <span class="toggle-label">Add 7th/9th</span>
-                            </label>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="voicing-toggle">
-                                <span class="slider"></span>
-                                <span class="toggle-label">Smart Voicing</span>
-                            </label>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="variation-toggle">
-                                <span class="slider"></span>
-                                <span class="toggle-label">2-Bar Loop</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="progressions-list" id="progressions-list">
-                        <!-- Progressions populated here -->
-                    </div>
-                </section>
-            </div>
-
-            <aside class="details-panel">
-                <div class="panel-section">
-                    <h2>Scale Notes & Degrees</h2>
-                    <div class="scale-degrees" id="scale-degrees">
-                        <!-- Scale degrees populated here -->
-                    </div>
-                </div>
-
-                <div class="panel-section">
-                    <h2>Chords in Key</h2>
-                    <div class="chords-list" id="chords-list">
-                        <!-- Chords populated here -->
-                    </div>
-                </div>
-
-
-            </aside>
-        </main>
-    </div>
-    <script src="dist/jsmidgen.js"></script>
-    <script src="dist/app.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
 </body>
 
 </html>
