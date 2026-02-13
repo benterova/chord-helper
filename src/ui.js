@@ -128,7 +128,8 @@ window.ChordApp = window.ChordApp || {};
 
         downloadBtn.disabled = false;
         downloadBtn.onclick = () => {
-            ChordApp.Midi.downloadGeneratedMidi('generated', events, root, mode, style);
+            const progString = progression.map(c => c.chordName).join('-');
+            ChordApp.Midi.downloadGeneratedMidi(progString, events, root, mode, style);
         };
     }
 

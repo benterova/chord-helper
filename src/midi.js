@@ -129,8 +129,9 @@ window.ChordApp = window.ChordApp || {};
         const link = document.createElement('a');
         link.href = url;
 
-        const safeName = `generated_${style}_${root}_${mode}`.replace(/[^a-z0-9\s-]/gi, '').replace(/\s+/g, '_');
-        link.download = `${safeName}.mid`;
+        const safeName = name.replace(/#/g, 's').replace(/[^a-z0-9\s-]/gi, '').replace(/\s+/g, '_');
+        const safeRoot = root.replace(/#/g, 's');
+        link.download = `generated_${safeName}_${style}_${safeRoot}_${mode}.mid`;
 
         document.body.appendChild(link);
         link.click();
