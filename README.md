@@ -9,25 +9,25 @@ An interactive web application to explore musical scales, generate chord progres
 - **MIDI Export**: Download high-quality MIDI files with custom rhythms.
 - **Offline Capable**: Works purely in the browser.
 
-## How to Build & Deploy
+### Build & Deploy
+This project uses **Vite** for building and **gh-pages** for deployment.
 
-This project is designed to run statically without a backend server. However, to bypass browser security restrictions (CORS) when running locally via `file://`, we bundle the scripts.
+1.  **Install Dependencies** (if not done):
+    ```bash
+    bun install
+    ```
 
-### Build Script
-Run the included build script to package the application:
+2.  **Run Locally**:
+    ```bash
+    bun run dev
+    ```
 
-```bash
-./build.sh
-```
-
-This will:
-1.  Download dependencies (`jsmidgen.js`) if needed.
-2.  Combine source files into `dist/app.js`.
-
-### GitHub Pages Deployment
-1.  Run `./build.sh`.
-2.  Commit the generated `dist/` directory.
-3.  Push to GitHub.
-4.  Enable GitHub Pages in your repository settings (Source: `main` branch).
+3.  **Deploy to GitHub Pages**:
+    ```bash
+    bun run deploy
+    ```
+    This command will automatically:
+    - Build the project (`bun run build`) into the `dist/` folder.
+    - Push the `dist/` folder to the `gh-pages` branch of your repository.
 
 The application will be live at `https://<your-username>.github.io/<repo-name>/`.
