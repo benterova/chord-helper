@@ -229,7 +229,6 @@ window.ChordApp = window.ChordApp || {};
             div.innerHTML = `
                 <div class="chord-info">
                     <span class="chord-name">${chord.chordName}</span>
-                    <span class="chord-quality-label">${chord.quality}</span>
                 </div>
                 <span class="chord-roman">${chord.roman}</span>
             `;

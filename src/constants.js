@@ -11,7 +11,7 @@ window.ChordApp = window.ChordApp || {};
         phrygian: [0, 1, 3, 5, 7, 8, 10],
         lydian: [0, 2, 4, 6, 7, 9, 11],
         mixolydian: [0, 2, 4, 5, 7, 9, 10],
-        aeolian: [0, 2, 3, 5, 7, 8, 10], // Natural Minor
+        natural_minor: [0, 2, 3, 5, 7, 8, 10], // Natural Minor (Aeolian)
         locrian: [0, 1, 3, 5, 6, 8, 10],
         harmonic_minor: [0, 2, 3, 5, 7, 8, 11],
         melodic_minor: [0, 2, 3, 5, 7, 9, 11],
@@ -27,7 +27,7 @@ window.ChordApp = window.ChordApp || {};
         phrygian: 'Phrygian',
         lydian: 'Lydian',
         mixolydian: 'Mixolydian',
-        aeolian: 'Minor (Aeolian)',
+        natural_minor: 'Natural Minor',
         locrian: 'Locrian',
         harmonic_minor: 'Harmonic Minor',
         melodic_minor: 'Melodic Minor',
@@ -58,7 +58,7 @@ window.ChordApp = window.ChordApp || {};
         mixolydian: [
             { name: 'Classic Rock (I-bVII-IV)', genre: 'Rock', indices: [0, 6, 3] }
         ],
-        aeolian: [
+        natural_minor: [
             { name: "Pop Minor", sequence: ["i", "VI", "III", "VII"], genre: "Pop" },
             { name: "Sad Ballad", sequence: ["i", "iv", "VI", "V"], genre: "Ballad" },
             { name: "Andalucian", sequence: ["i", "VII", "VI", "V"], genre: "Flamenco" }
