@@ -15,14 +15,26 @@ window.ChordApp = window.ChordApp || {};
             keySelect.appendChild(option);
         });
 
-        // Populate Modes
-        scaleSelect.innerHTML = '';
-        Object.keys(MODE_display_NAMES).forEach(modeKey => {
-            const option = document.createElement('option');
-            option.value = modeKey;
-            option.textContent = MODE_display_NAMES[modeKey];
-            scaleSelect.appendChild(option);
-        });
+        // Populate Scales with Groups
+        const { MODE_DISPLAY_NAMES } = ChordApp.Constants;
+
+        const standardModes = ['ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'aeolian', 'locrian'];
+        const otherScales = ['harmonic_minor', 'melodic_minor', 'major_pentatonic', 'minor_pentatonic', 'blues'];
+
+        const createGroup = (label, keys) => {
+            const group = document.createElement('optgroup');
+            group.label = label;
+            keys.forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = MODE_DISPLAY_NAMES[key];
+                group.appendChild(opt);
+            });
+            return group;
+        };
+
+        scaleSelect.appendChild(createGroup('Standard Modes', standardModes));
+        scaleSelect.appendChild(createGroup('Other Scales', otherScales));
 
         keySelect.value = initialRoot;
         scaleSelect.value = initialMode;
@@ -162,7 +174,13 @@ window.ChordApp = window.ChordApp || {};
         centerText.setAttribute("fill", "var(--text-primary)");
         centerText.setAttribute("font-size", "24");
 
-        const modeName = state.mode.charAt(0).toUpperCase() + state.mode.slice(1);
+        const { MODE_DISPLAY_NAMES } = ChordApp.Constants;
+        const modeName = MODE_DISPLAY_NAMES[state.mode] || state.mode;
+
+        // If the name is long (e.g. "Harmonic Minor"), maybe split it?
+        // For now, let's just show it. 
+        // We might want to remove the redundant "Scale" or "Mode" if present, but standard names are fine.
+
         centerText.textContent = `${state.root} ${modeName}`;
         svg.appendChild(centerText);
 

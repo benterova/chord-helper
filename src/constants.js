@@ -12,18 +12,28 @@ window.ChordApp = window.ChordApp || {};
         lydian: [0, 2, 4, 6, 7, 9, 11],
         mixolydian: [0, 2, 4, 5, 7, 9, 10],
         aeolian: [0, 2, 3, 5, 7, 8, 10], // Natural Minor
-        locrian: [0, 1, 3, 5, 6, 8, 10]
+        locrian: [0, 1, 3, 5, 6, 8, 10],
+        harmonic_minor: [0, 2, 3, 5, 7, 8, 11],
+        melodic_minor: [0, 2, 3, 5, 7, 9, 11],
+        major_pentatonic: [0, 2, 4, 7, 9],
+        minor_pentatonic: [0, 3, 5, 7, 10],
+        blues: [0, 3, 5, 6, 7, 10]
     };
 
     // Map display names to keys
-    const MODE_display_NAMES = {
+    const MODE_DISPLAY_NAMES = {
         ionian: 'Major (Ionian)',
         dorian: 'Dorian',
         phrygian: 'Phrygian',
         lydian: 'Lydian',
         mixolydian: 'Mixolydian',
         aeolian: 'Minor (Aeolian)',
-        locrian: 'Locrian'
+        locrian: 'Locrian',
+        harmonic_minor: 'Harmonic Minor',
+        melodic_minor: 'Melodic Minor',
+        major_pentatonic: 'Major Pentatonic',
+        minor_pentatonic: 'Minor Pentatonic',
+        blues: 'Blues'
     };
 
     // Common Progressions for demo purposes
@@ -61,7 +71,7 @@ window.ChordApp = window.ChordApp || {};
         NOTES,
         CIRCLE_OF_FIFTHS,
         SCALES,
-        MODE_display_NAMES,
+        MODE_DISPLAY_NAMES,
         PROGRESSIONS
     };
 })();

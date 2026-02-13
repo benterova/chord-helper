@@ -15,12 +15,13 @@ window.ChordApp = window.ChordApp || {};
         const scaleNotes = getScaleNotes(root, mode);
 
         return scaleNotes.map((note, index) => {
+            const len = scaleNotes.length;
             // 1. Get the notes for this chord (Root, 3rd, 5th, 7th, 9th)
             const rootNote = scaleNotes[index];
-            const thirdNote = scaleNotes[(index + 2) % 7];
-            const fifthNote = scaleNotes[(index + 4) % 7];
-            const seventhNote = scaleNotes[(index + 6) % 7];
-            const ninthNote = scaleNotes[(index + 1) % 7]; // 9th is same note class as 2nd ((i+8)%7 == (i+1)%7)
+            const thirdNote = scaleNotes[(index + 2) % len];
+            const fifthNote = scaleNotes[(index + 4) % len];
+            const seventhNote = scaleNotes[(index + 6) % len];
+            const ninthNote = scaleNotes[(index + 1) % len]; // 9th is same note class as 2nd
 
             // 2. Calculate intervals from Root to determine quality
             const rIndex = NOTES.indexOf(rootNote);
