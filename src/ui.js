@@ -18,7 +18,7 @@ window.ChordApp = window.ChordApp || {};
         // Populate Scales with Groups
         const { MODE_DISPLAY_NAMES } = ChordApp.Constants;
 
-        const standardModes = ['ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'aeolian', 'locrian'];
+        const standardModes = ['ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'natural_minor', 'locrian'];
         const otherScales = ['harmonic_minor', 'melodic_minor', 'major_pentatonic', 'minor_pentatonic', 'blues'];
 
         const createGroup = (label, keys) => {
