@@ -1,7 +1,10 @@
 window.ChordApp = window.ChordApp || {};
 
 (function () {
-    const { CIRCLE_OF_FIFTHS, MODE_display_NAMES, PROGRESSIONS } = ChordApp.Constants;
+    const { CIRCLE_OF_FIFTHS, MODE_DISPLAY_NAMES, PROGRESSIONS } = ChordApp.Constants;
+    const { generateProgression, applyRhythm, STYLES } = ChordApp.Engine;
+
+
 
     function initControls(notes, initialRoot, initialMode, onRootChange, onModeChange) {
         const keySelect = document.getElementById('key-select');
@@ -48,6 +51,85 @@ window.ChordApp = window.ChordApp || {};
             tooltip.id = 'chord-tooltip';
             document.body.appendChild(tooltip);
         }
+
+        // Init Generator UI
+        initGeneratorControls(initialRoot, initialMode);
+    }
+
+    function initGeneratorControls(root, mode) {
+        // Find a place to inject. Let's look for 'progressions-list' parent or similar.
+        const progContainer = document.getElementById('progressions-list');
+        if (!progContainer) return;
+
+        // Create Container for Generator
+        const genContainer = document.createElement('div');
+        genContainer.className = 'generator-container';
+        genContainer.style.marginTop = '40px';
+        genContainer.style.padding = '20px';
+        genContainer.style.background = 'var(--bg-secondary)';
+        genContainer.style.borderRadius = '12px';
+        genContainer.innerHTML = `
+            <h3 style="margin-top:0;">Generative Engine</h3>
+            <div class="controls" style="display:flex; gap:15px; margin-bottom:15px;">
+                <label>
+                    Style:
+                    <select id="gen-style">
+                        <option value="pop">Pop</option>
+                        <option value="jazz">Jazz</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </label>
+                <label>
+                    Length:
+                    <select id="gen-length">
+                        <option value="4">4 Bars</option>
+                        <option value="8">8 Bars</option>
+                    </select>
+                </label>
+                <button id="btn-generate" class="midi-btn" style="background:var(--accent-color);">Generate New</button>
+            </div>
+            <div id="gen-result" style="margin-bottom:15px; min-height:50px;"></div>
+            <button id="btn-download-gen" class="midi-btn" disabled>Download Generated MIDI</button>
+        `;
+
+        progContainer.parentNode.insertBefore(genContainer, progContainer.nextSibling);
+
+        // Bind Events
+        document.getElementById('btn-generate').onclick = () => {
+            const style = document.getElementById('gen-style').value;
+            const length = parseInt(document.getElementById('gen-length').value, 10);
+
+            // Get current global state (from UI closure or passed args? Args are initial only...)
+            // We need current root/mode. 
+            // HACK: Read from DOM or exposing state? 
+            // Ideally explicit state passing. But 'render' receives state.
+            // Let's store latest state in a closure var or read DOM.
+            const currentRoot = document.getElementById('key-select').value;
+            const currentMode = document.getElementById('scale-type-select').value;
+
+            const progression = generateProgression(currentRoot, currentMode, { style, length });
+            const events = applyRhythm(progression, style);
+
+            renderGeneratedResult(progression, events, style, currentRoot, currentMode);
+        };
+    }
+
+    function renderGeneratedResult(progression, events, style, root, mode) {
+        const resultDiv = document.getElementById('gen-result');
+        const downloadBtn = document.getElementById('btn-download-gen');
+
+        const chordNames = progression.map(c => c.chordName).join(' - ');
+        const romanNames = progression.map(c => c.roman).join(' - ');
+
+        resultDiv.innerHTML = `
+            <div style="font-size:1.1em; font-weight:bold; margin-bottom:5px;">${chordNames}</div>
+            <div style="color:var(--text-secondary); font-size:0.9em;">${romanNames}</div>
+        `;
+
+        downloadBtn.disabled = false;
+        downloadBtn.onclick = () => {
+            ChordApp.Midi.downloadGeneratedMidi('generated', events, root, mode, style);
+        };
     }
 
     function render(state, chords, onMidiDownload) {
