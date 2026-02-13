@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { audioEngine } from '../lib/audio';
 import { type Chord, generateVariationSequence } from '../lib/theory';
 import { PROGRESSIONS, type ScaleName } from '../lib/constants';
 import { downloadProgressionMidi } from '../lib/midi';
@@ -13,6 +14,11 @@ export const ProgressionList: React.FC<ProgressionListProps> = ({ root, mode, ch
     const [isExtension, setIsExtension] = useState(false);
     const [isVoicing, setIsVoicing] = useState(false); // Smart Voicing
     const [isVariation, setIsVariation] = useState(false); // 2-Bar Loop
+    const [playingId, setPlayingId] = useState<string | null>(null);
+
+    React.useEffect(() => {
+        return audioEngine.subscribe(id => setPlayingId(id));
+    }, []);
 
     const progs = PROGRESSIONS[mode] || [];
 
@@ -23,6 +29,25 @@ export const ProgressionList: React.FC<ProgressionListProps> = ({ root, mode, ch
             isExtension,
             isVoicing
         });
+    };
+
+    const handlePlay = (indices: number[], id: string) => {
+        if (playingId === id) {
+            audioEngine.stop();
+            return;
+        }
+
+        const sequence = generateVariationSequence(indices, chords, isVariation, isExtension, isVoicing);
+        const BPM = 120;
+        const secondsPerBeat = 60 / BPM;
+
+        // Map sequence to audio engine format
+        const audioSequence = sequence.map(chord => ({
+            notes: chord.midiNotes,
+            duration: 4 * secondsPerBeat // 1 bar
+        }));
+
+        audioEngine.playProgression(audioSequence, id);
     };
 
     if (progs.length === 0) {
@@ -81,12 +106,21 @@ export const ProgressionList: React.FC<ProgressionListProps> = ({ root, mode, ch
                                 </div>
                                 {chordsDisplay}
                             </div>
-                            <button
-                                className="midi-btn primary"
-                                onClick={() => handleDownload(prog.name, prog.indices, prog.genre)}
-                            >
-                                Download MIDI
-                            </button>
+                            <div className="prog-actions" style={{ display: 'flex', gap: '10px' }}>
+                                <button
+                                    onClick={() => handlePlay(prog.indices, `prog-${idx}`)}
+                                    className={`midi-btn ${playingId === `prog-${idx}` ? 'playing' : ''}`}
+                                    style={playingId === `prog-${idx}` ? { background: '#ef233c', color: 'white' } : {}}
+                                >
+                                    {playingId === `prog-${idx}` ? '⏹ Stop' : '▶ Play'}
+                                </button>
+                                <button
+                                    onClick={() => handleDownload(`progression-${idx + 1}`, prog.indices, 'pop')}
+                                    className="midi-btn"
+                                >
+                                    MIDI
+                                </button>
+                            </div>
                         </div>
                     );
                 })}

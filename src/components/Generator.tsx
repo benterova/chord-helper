@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { STYLES, type Style, generateProgression, applyRhythm, type MidiEvent } from '../lib/engine';
 import { downloadGeneratedMidi } from '../lib/midi';
 import type { Chord } from '../lib/theory';
+import { audioEngine } from '../lib/audio';
 
 interface GeneratorProps {
     root: string;
@@ -15,6 +16,11 @@ export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
 
     const [generatedProgression, setGeneratedProgression] = useState<Chord[] | null>(null);
     const [generatedEvents, setGeneratedEvents] = useState<MidiEvent[] | null>(null);
+    const [playingId, setPlayingId] = useState<string | null>(null);
+
+    React.useEffect(() => {
+        return audioEngine.subscribe(id => setPlayingId(id));
+    }, []);
 
     const handleGenerate = () => {
         const progression = generateProgression(root, mode as any, { style, length });
@@ -27,6 +33,79 @@ export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
         if (!generatedProgression || !generatedEvents) return;
         const name = generatedProgression.map(c => c.chordName).join('-');
         downloadGeneratedMidi(name, generatedEvents, root, mode, style);
+    };
+
+    const handlePlay = () => {
+        if (playingId === 'generator') {
+            audioEngine.stop();
+            return;
+        }
+
+        if (!generatedEvents) return;
+
+        // Convert to AudioEngine format
+        // Audio engine expects seconds, MidiEvent inside engine.ts uses 128 ticks per beat
+        // 120 BPM = 0.5s per beat = 128 ticks
+        // Ticks to Seconds = (ticks / 128) * 0.5
+
+        const secondsPerTick = 0.5 / 128;
+        const speedFactor = 1.0; // Normal tempo
+
+        // We need to flatten the events into a sequence where we wait for gaps
+        // Actually, AudioEngine logic is "Next item plays after Current item duration"
+        // But the generated events have 'startTime' and 'duration'.
+        // We need to adapt this.
+        // The simple AudioEngine loop expects a sequence of blocks.
+        // The generator output is a list of events with absolute start times.
+
+        // Complex Solution: Update AudioEngine to take absolute events.
+        // Simple Solution: Convert absolute events to a sequential blocks list?
+        // No, overlapping notes (polyphony during same beat) won't work well with simple "queue".
+
+        // BETTER: Update AudioEngine to support "Score" playback?
+        // OR: Just schedule all events now using `playNotes` with time offset?
+        // But then `stop()` needs to work.
+        // `playNotes` uses `scheduleNotes`.
+
+        // Let's implement a `playScore` method in AudioEngine or just loop here scheduling them?
+        // If we schedule them all at once, `stop()` on AudioEngine handles clearing them!
+        // We just need to calculate the relative time for each.
+
+        const now = audioEngine.getCurrentTime();
+
+        // Stop previous
+        audioEngine.stop();
+
+        // Manually schedule all events
+        // Let's rely on the simple AudioEngine for now, which might be limited.
+        // Only way with current API:
+        // `playProgression` takes a sequence of `{notes, duration}`.
+        // If the generated rhythm is monophonic (chord blocks), we can convert it.
+        // `applyRhythm` returns `MidiEvent[]` with keys `notes`, `duration`, `startTime`.
+        // It seems `applyRhythm` output is essentially a track.
+
+        // Let's try to convert it to a sequence map if it's sequential.
+        // If there are gaps, we need silent spacers.
+
+        // Sort by start time
+        const sorted = [...generatedEvents].sort((a, b) => a.startTime - b.startTime);
+        const sequence: { notes: number[], duration: number }[] = [];
+
+        let lastEnd = 0;
+        sorted.forEach(ev => {
+            const gap = ev.startTime - lastEnd;
+            if (gap > 0) {
+                // Pause / Silence
+                // AudioEngine doesn't have explicit rest support in type?
+                // It plays notes. Empty notes array = silence?
+                sequence.push({ notes: [], duration: gap * secondsPerTick });
+            }
+
+            sequence.push({ notes: ev.notes, duration: ev.duration * secondsPerTick });
+            lastEnd = ev.startTime + ev.duration;
+        });
+
+        audioEngine.playProgression(sequence, 'generator');
     };
 
     const styleLabels: Record<string, string> = {
@@ -88,14 +167,25 @@ export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
                 </div>
             )}
 
-            <button
-                onClick={handleDownload}
-                disabled={!generatedProgression}
-                className="midi-btn primary"
-                style={{ width: '100%', backgroundColor: generatedProgression ? 'var(--primary-color, #3a86ff)' : undefined }}
-            >
-                Download Generated MIDI
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                    onClick={handlePlay}
+                    disabled={!generatedEvents}
+                    className="midi-btn"
+                    title="Preview in Browser"
+                    style={playingId === 'generator' ? { background: '#ef233c', color: 'white' } : {}}
+                >
+                    {playingId === 'generator' ? '⏹ Stop' : '▶ Play'}
+                </button>
+                <button
+                    onClick={handleDownload}
+                    disabled={!generatedProgression}
+                    className="midi-btn primary"
+                    style={{ width: '100%', backgroundColor: generatedProgression ? 'var(--primary-color, #3a86ff)' : undefined }}
+                >
+                    Download Generated MIDI
+                </button>
+            </div>
         </div>
     );
 };

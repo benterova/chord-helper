@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { type Chord, getChordNotes } from '../lib/theory';
+import { audioEngine } from '../lib/audio';
+import { type Chord, getChordMidiNotes, getChordNotes } from '../lib/theory';
 import { CIRCLE_OF_FIFTHS, MODE_DISPLAY_NAMES, type ScaleName } from '../lib/constants';
 
 interface CircleOfFifthsProps {
@@ -49,6 +50,12 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({ root, mode, chor
         setHoveredChord(null);
     };
 
+    const handleChordClick = (chord: Chord | undefined) => {
+        if (!chord) return;
+        const midiNotes = getChordMidiNotes(chord);
+        audioEngine.playNotes(midiNotes, 0.5, true); // True for concurrent
+    };
+
     return (
         <div style={{ position: 'relative' }}>
             <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: 'auto', maxHeight: '500px' }}>
@@ -77,6 +84,7 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({ root, mode, chor
                             onMouseEnter={(e) => handleMouseEnter(e, chordData)}
                             onMouseMove={handleMouseMove}
                             onMouseLeave={handleMouseLeave}
+                            onClick={() => handleChordClick(chordData)}
                             style={{ cursor: chordData ? 'pointer' : 'default' }}
                         >
                             <path
@@ -94,6 +102,7 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({ root, mode, chor
                                 fill={chordData ? "#000" : "var(--text-secondary, #888)"}
                                 fontWeight="bold"
                                 fontSize="18"
+                                style={{ pointerEvents: 'none' }}
                             >
                                 {note}
                             </text>
@@ -105,6 +114,7 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({ root, mode, chor
                                     dominantBaseline="middle"
                                     fill="#000"
                                     fontSize="14"
+                                    style={{ pointerEvents: 'none' }}
                                 >
                                     {chordData.roman}
                                 </text>

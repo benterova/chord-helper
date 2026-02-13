@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Header } from './components/Header';
 import { Controls } from './components/Controls';
@@ -7,12 +7,26 @@ import { ProgressionList } from './components/ProgressionList';
 import { ScaleDetails } from './components/ScaleDetails';
 import { Generator } from './components/Generator';
 import { getChords } from './lib/theory';
+import { audioEngine } from './lib/audio';
 import type { ScaleName } from './lib/constants';
 import './index.css';
+
+import { GlobalControls } from './components/GlobalControls';
 
 function App() {
   const [root, setRoot] = useState<string>('C');
   const [mode, setMode] = useState<ScaleName>('ionian');
+
+  // Metronome/Loop state moved to GlobalControls
+
+  // Sync Audio State
+  // useEffect(() => {
+  //   audioEngine.setMetronome(isMetronome);
+  // }, [isMetronome]);
+
+  // useEffect(() => {
+  //   audioEngine.setLoop(isLoop);
+  // }, [isLoop]);
 
   const chords = useMemo(() => {
     return getChords(root, mode);
@@ -40,6 +54,7 @@ function App() {
             <div className="circle-container" style={{ width: '100%', maxWidth: '500px' }}>
               <CircleOfFifths root={root} mode={mode} chords={chords} />
             </div>
+
             <div className="legend">
               <div className="legend-item">
                 <span className="legend-color major"></span>
@@ -65,7 +80,10 @@ function App() {
           <Generator root={root} mode={mode} />
         </div>
 
-        <ScaleDetails chords={chords} />
+        <div className="right-column" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <ScaleDetails chords={chords} />
+          <GlobalControls />
+        </div>
       </main>
     </Layout>
   );

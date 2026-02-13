@@ -13,7 +13,21 @@ export const Controls: React.FC<ControlsProps> = ({ root, mode, onRootChange, on
     const otherScales: ScaleName[] = ['harmonic_minor', 'melodic_minor', 'major_pentatonic', 'minor_pentatonic', 'blues'];
 
     return (
-        <div className="controls" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+        <div className="controls" style={{
+            display: 'flex',
+            gap: '2rem',
+            flexWrap: 'wrap',
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            backgroundColor: 'var(--bg-color)',
+            paddingTop: '1rem',
+            paddingBottom: '1rem',
+            borderBottom: '1px solid var(--border-color)',
+            margin: '0 -2rem', // Negative margin to stretch full width of container padding
+            paddingLeft: '2rem',
+            paddingRight: '2rem'
+        }}>
             <div className="control-group">
                 <label htmlFor="key-select" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Key</label>
                 <select
