@@ -39,9 +39,10 @@ window.ChordApp = window.ChordApp || {};
     // Common Progressions for demo purposes
     const PROGRESSIONS = {
         ionian: [
-            { name: 'Pop (I-V-vi-IV)', genre: 'Pop', indices: [0, 4, 5, 3] },
-            { name: 'Jazz ii-V-I', genre: 'Jazz', indices: [1, 4, 0] },
-            { name: 'Doo-Wop (I-vi-IV-V)', genre: 'Oldies', indices: [0, 5, 3, 4] }
+            { name: "Pop Changes", sequence: ["I", "V", "vi", "IV"], genre: "Pop" },
+            { name: "Jazz Turnaround", sequence: ["ii", "V", "I", "vi"], genre: "Jazz" },
+            { name: "Doo-Wop", sequence: ["I", "vi", "IV", "V"], genre: "Oldies" },
+            { name: "Canon", sequence: ["I", "V", "vi", "iii", "IV", "I", "IV", "V"], genre: "Classical" }
         ],
         dorian: [
             { name: 'So What (i-VII)', genre: 'Jazz', indices: [0, 6] },
