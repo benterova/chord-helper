@@ -95,6 +95,47 @@ window.ChordApp = window.ChordApp || {};
         return parseInt(keys[keys.length - 1], 10);
     }
 
+    function optimizeVoicing(notes, style) {
+        // Simple voicing optimizer
+        // 1. Ensure root is in bass (move down octave if needed)
+        // 2. Spread cluster chords
+
+        // Clone array
+        let voiced = [...notes];
+
+        if (style === STYLES.JAZZ) {
+            // Drop 2 Voicing Strategy (simplified)
+            // Take the second highest note and drop it an octave
+            if (voiced.length >= 4) {
+                // Sort
+                voiced.sort((a, b) => a - b);
+                const secondHighest = voiced[voiced.length - 2];
+                // Remove it
+                voiced.splice(voiced.length - 2, 1);
+                // Add octave down
+                voiced.unshift(secondHighest - 12);
+            }
+
+            // Ensure Bass Root is deep
+            // If root (lowest) is > 55 (G2), drop it octave
+            if (voiced[0] > 55) {
+                voiced[0] -= 12;
+            }
+        } else if (style === STYLES.DARK) {
+            // Spread wide for cinematic feel
+            // Move 3rd (second note usually) up an octave?
+            if (voiced.length >= 3) {
+                const third = voiced[1];
+                voiced.splice(1, 1);
+                voiced.push(third + 12);
+            }
+            // Deep bass
+            if (voiced[0] > 48) voiced[0] -= 12;
+        }
+
+        return voiced.sort((a, b) => a - b);
+    }
+
     // --- Core Logic ---
 
     /**
@@ -119,8 +160,6 @@ window.ChordApp = window.ChordApp || {};
 
         // 3. Walk the matrix
         for (let i = 1; i < length; i++) {
-            // If it's the last chord and style suggests resolution, force V or IV?
-            // For now, just random walk.
             const nextIndex = getWeightedRandom(matrix, currentIndex);
             progressionIndices.push(nextIndex);
             currentIndex = nextIndex;
@@ -132,30 +171,26 @@ window.ChordApp = window.ChordApp || {};
 
     /**
      * Converts a chord progression into a timed MIDI event sequence.
-     * @param {object[]} progression - Array of chord objects
-     * @param {string} style - musical style for rhythm
-     * @returns {object[]} Array of { notes: [], duration: ticks, velocity: 0-127, startTime: ticks }
+     * ...
      */
     function applyRhythm(progression, style = STYLES.POP) {
         const events = [];
-        const PPQ = 128; // Ticks per quarter note
+        const PPQ = 128;
         const TICKS_PER_16TH = PPQ / 4;
 
-        // Pick a rhythm pattern for the whole progression (or vary per bar?)
-        // Let's pick one pattern for consistency for now.
         const rhythmPool = RHYTHMS[style] || RHYTHMS[STYLES.POP];
         const rhythm = getRandomElement(rhythmPool);
 
         let userExtensions = { extensions: false, variation: false };
         if (style === STYLES.JAZZ) {
-            userExtensions.extensions = true; // Jazz implies 7ths
+            userExtensions.extensions = true;
         }
 
         let currentTime = 0;
 
         progression.forEach(chord => {
-            // 1 bar per chord
-            const midiNotes = getChordMidiNotes(chord, userExtensions);
+            const rawNotes = getChordMidiNotes(chord, userExtensions);
+            const midiNotes = optimizeVoicing(rawNotes, style);
 
             // Apply Pattern
             rhythm.pattern.forEach((vel, index) => {

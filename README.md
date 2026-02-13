@@ -1,41 +1,33 @@
 # Chord & Scale Helper
 
-## AI SLOP WARNING
-## prompted it cause i need it, uayor
-
-A visual, interactive tool for exploring musical scales, modes, and chord progressions. Designed to help musicians and producers create harmonic content quickly.
+An interactive web application to explore musical scales, generate chord progressions, and download MIDI files.
 
 ## Features
+- **Circle of Fifths Visualization**: Interactive SVG-based circle.
+- **Chord Progressions**: Hundreds of example progressions for various styles (Pop, Jazz, Rock).
+- **Generative Engine**: Create unique progressions with AI-driven logic (Pop, Jazz, Dark styles).
+- **MIDI Export**: Download high-quality MIDI files with custom rhythms.
+- **Offline Capable**: Works purely in the browser.
 
-- **Interactive Circle of 5ths**: Visualize the relationship between keys.
-- **7 Modes Supported**: Ionian (Major), Dorian, Phrygian, Lydian, Mixolydian, Aeolian (Minor), and Locrian.
-- **Smart Chord Generation**: Automatically generates chords diatonic to the selected scale.
-- **Progression Library**: Includes common progressions for Pop, Jazz, R&B, and more.
-- **Advanced MIDI Tools**:
-    - **Smart Voicing**: Smooth voice leading for professional-sounding chords.
-    - **Extensions (7th/9th)**: Add color to your chords with a single toggle.
-    - **2-Bar Loops**: Automatically generates musical variations with turnarounds.
-    - **Download MIDI**: Export your progressions directly to your DAW.
-- **Local First**: Runs entirely in the browser with no server required.
+## How to Build & Deploy
 
-## Usage
+This project is designed to run statically without a backend server. However, to bypass browser security restrictions (CORS) when running locally via `file://`, we bundle the scripts.
 
-1.  Open `index.html` in any modern web browser.
-2.  Select a **Key** and **Scale** (Mode).
-3.  Explore the chords in the "Chords in Key" panel.
-4.  Try the **Example Progressions** or enable the advanced toggles:
-    - **Add 7th/9th + Variation**: For lush, complex harmonies.
-    - **Smart Voicing**: For smooth, pianistic transitions.
-    - **2-Bar Loop**: To create a full musical phrase.
-5.  Click **Download MIDI** to save the progression.
+### Build Script
+Run the included build script to package the application:
 
-## Technologies
+```bash
+./build.sh
+```
 
-- Vanilla JavaScript (ES Modules, Namespace Pattern)
-- CSS3 (Variables, Grid, Flexbox)
-- SVG for data visualization
-- `jsmidgen` for MIDI generation
+This will:
+1.  Download dependencies (`jsmidgen.js`) if needed.
+2.  Combine source files into `dist/app.js`.
 
-## License
+### GitHub Pages Deployment
+1.  Run `./build.sh`.
+2.  Commit the generated `dist/` directory.
+3.  Push to GitHub.
+4.  Enable GitHub Pages in your repository settings (Source: `main` branch).
 
-MIT
+The application will be live at `https://<your-username>.github.io/<repo-name>/`.
