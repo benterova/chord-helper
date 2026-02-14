@@ -25,6 +25,7 @@ export type TransitionMatrix = Record<number, Record<number, number>>;
 export interface StyleDef {
     name: StyleName;
     transitions: TransitionMatrix;
+    startingChordProbabilities?: Record<number, number>;
     rhythms: RhythmPattern[];
     optimizeVoicing(notes: number[]): number[];
 }

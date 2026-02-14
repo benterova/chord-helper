@@ -11,6 +11,14 @@ export const pop: StyleDef = {
         5: { 3: 0.4, 1: 0.4, 4: 0.2 },                  // vi -> IV, ii
         6: { 0: 0.8, 5: 0.2 }                           // vii -> I (leading tone)
     },
+    startingChordProbabilities: {
+        0: 0.5,  // I (50%)
+        3: 0.15, // IV (15%)
+        4: 0.15, // V (15%)
+        5: 0.1,  // vi (10%)
+        1: 0.05, // ii (5%)
+        2: 0.05  // iii (5%)
+    },
     rhythms: [
         { name: "Whole Notes", length: 16, pattern: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
         { name: "Driving 8ths", length: 16, pattern: [1, 0, 0.8, 0, 0.9, 0, 0.8, 0, 1, 0, 0.8, 0, 0.9, 0, 0.8, 0] },

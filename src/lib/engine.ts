@@ -48,9 +48,29 @@ export function generateProgression(root: string, mode: ScaleName, options: Gene
     const scaleChords = getChords(root, mode);
 
     // 2. Start with Tonic (usually) or look at style
-    const progressionIndices = [0]; // Always start on I for stability in this demo
+    let firstIndex = 0;
+    if (styleDef.startingChordProbabilities) {
+        firstIndex = getWeightedRandom(styleDef.startingChordProbabilities as any, -1); // -1 is dummy 'current'
+    } else {
+        // Default fallback if style doesn't specify:
+        // Mostly I, but sometimes IV, V, vi
+        const defaultStarts = {
+            0: 0.6,
+            3: 0.1,
+            4: 0.1,
+            5: 0.1,
+            1: 0.05,
+            2: 0.05
+        };
+        firstIndex = getWeightedRandom(defaultStarts as any, -1);
+    }
 
-    let currentIndex = 0;
+    // Ensure it's within bounds (just in case)
+    if (firstIndex >= scaleChords.length) firstIndex = 0;
+
+    const progressionIndices = [firstIndex];
+
+    let currentIndex = firstIndex;
     const matrix = styleDef.transitions;
 
     // 3. Walk the matrix
