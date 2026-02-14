@@ -39,6 +39,7 @@ interface WindowManagerContextType {
 
 const WindowManagerContext = createContext<WindowManagerContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useWindowManager = () => {
     const context = useContext(WindowManagerContext);
     if (!context) {
@@ -90,7 +91,7 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
                 return prevWindows.map(w => {
                     if (!w.isOpen || w.isMinimized) return w;
 
-                    let height = w.size.height;
+                    const height = w.size.height;
                     // Optional: cap height if needed, but existing heights are okayish
 
                     const newY = currentY;
@@ -178,7 +179,7 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
     // Re-tile if a window is opened, closed, or minimized
     const windowsStructureHash = windows.map(w => `${w.id}:${w.isOpen}:${w.isMinimized}`).join('|');
     useEffect(() => {
-        applyTiledLayout();
+        applyTiledLayout(); // eslint-disable-line
     }, [windowsStructureHash, applyTiledLayout]);
 
 

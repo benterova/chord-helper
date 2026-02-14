@@ -1,5 +1,5 @@
 
-import { applyRhythm, STYLES } from '../src/lib/engine';
+import { applyRhythm, STYLES, type Style } from '../src/lib/engine';
 import { Chord } from '../src/lib/theory';
 
 // Mock Chord
@@ -12,9 +12,9 @@ const C_Major: Chord = {
     intervals: { third: 4, fifth: 7, seventh: 11, ninth: 2 }
 };
 
-const NOTE_16TH_TICKS = 32;
 
-function testStyle(styleName: any, expectedName: string, expectedLength: number, expectedTicksPerStep: number = 32) {
+
+function testStyle(styleName: Style, expectedName: string, expectedLength: number, expectedTicksPerStep: number = 32) {
     console.log(`\nTesting Style: ${styleName} (Target: ${expectedName})`);
 
     // Override Math.random to pick the last rhythm

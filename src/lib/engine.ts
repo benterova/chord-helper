@@ -55,10 +55,10 @@ export function generateProgression(root: string, mode: ScaleName, options: Gene
     // 2. Start with Tonic (usually) or look at style
     let firstIndex = 0;
     if (styleDef.startingChordProbabilities) {
-        firstIndex = getWeightedRandom(styleDef.startingChordProbabilities as any, -1);
+        firstIndex = getWeightedRandom({ '-1': styleDef.startingChordProbabilities }, -1);
     } else {
         const defaultStarts = { 0: 0.6, 3: 0.1, 4: 0.1, 5: 0.1 };
-        firstIndex = getWeightedRandom(defaultStarts as any, -1);
+        firstIndex = getWeightedRandom({ '-1': defaultStarts }, -1);
     }
     if (firstIndex >= scaleChords.length) firstIndex = 0;
 
@@ -125,7 +125,7 @@ export function applyRhythm(progression: Chord[], style: Style = STYLES.POP, ena
         ? rhythmPool.find(r => r !== mainRhythm) || mainRhythm
         : mainRhythm;
 
-    let userExtensions = { extensions: false, variation: false };
+    const userExtensions = { extensions: false, variation: false };
     const extensiveStyles: Style[] = [STYLES.JAZZ, STYLES.RNB, STYLES.LOFI, STYLES.BOSSA, STYLES.FUTURE, STYLES.JPOP, STYLES.HYPERPOP];
     if (extensiveStyles.includes(style)) {
         userExtensions.extensions = true;

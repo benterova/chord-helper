@@ -1,0 +1,130 @@
+
+> chord_helper@0.0.0 lint
+> eslint .
+
+
+/home/benterova/projects/chord_helper/scripts/verify_rhythms.ts
+  15:7   error  'NOTE_16TH_TICKS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  17:31  error  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+/home/benterova/projects/chord_helper/src/components/CircleOfFifths.tsx
+  163:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  298:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  304:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  304:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  309:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  309:71  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/benterova/projects/chord_helper/src/components/Generator.tsx
+  44:12  error    '_isGenerating' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  44:27  error    '_setIsGenerating' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  54:9   error    Error: Cannot access variable before it is declared
+
+`handleGenerate` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/home/benterova/projects/chord_helper/src/components/Generator.tsx:54:9
+  52 |     // 1. Auto-Generate on Mount, Root/Mode Change, and Style Change
+  53 |     useEffect(() => {
+> 54 |         handleGenerate();
+     |         ^^^^^^^^^^^^^^ `handleGenerate` accessed before it is declared
+  55 |     }, [root, mode, style]);
+  56 |
+  57 |     // 2. React to Rhythm Toggle (without changing chords)
+
+/home/benterova/projects/chord_helper/src/components/Generator.tsx:65:5
+  63 |     }, [enableRhythm]);
+  64 |
+> 65 |     const handleGenerate = () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 66 |         audioEngine.stop();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 67 |         const progression = generateProgression(root, mode as any, { style, length });
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 68 |         const events = applyRhythm(progression, style, enableRhythm);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 69 |         setGeneratedProgression(progression);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 70 |         setGeneratedEvents(events);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 71 |     };
+     | ^^^^^^^ `handleGenerate` is declared here
+  72 |
+  73 |     const handleSave = () => {
+  74 |         if (!generatedProgression || !generatedEvents) return;  react-hooks/immutability
+  55:8   warning  React Hook useEffect has a missing dependency: 'handleGenerate'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+  63:8   warning  React Hook useEffect has missing dependencies: 'generatedProgression' and 'style'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  67:63  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  79:24  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/benterova/projects/chord_helper/src/components/Generator.tsx:79:24
+  77 |             id: crypto.randomUUID(),
+  78 |             name: `${root} ${mode} ${style} - ${new Date().toLocaleTimeString()}`,
+> 79 |             timestamp: Date.now(),
+     |                        ^^^^^^^^^^ Cannot call impure function
+  80 |             chords: generatedProgression,
+  81 |             events: generatedEvents,
+  82 |             root,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/purity
+
+/home/benterova/projects/chord_helper/src/components/ParticleSystem.tsx
+  100:83  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/benterova/projects/chord_helper/src/components/ParticleSystem.tsx:100:83
+   98 |         if (active) {
+   99 |             // Spawn rate based on intensity
+> 100 |             const spawnCount = intensity === 'high' ? 3 : (intensity === 'low' ? (Math.random() > 0.5 ? 1 : 0) : 1);
+      |                                                                                   ^^^^^^^^^^^^^ Cannot call impure function
+  101 |
+  102 |             for (let i = 0; i < spawnCount; i++) {
+  103 |                 particles.current.push(createParticle(canvas.width, canvas.height));  react-hooks/purity
+  121:17  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/benterova/projects/chord_helper/src/components/ParticleSystem.tsx:121:17
+  119 |
+  120 |             // Twinkle effect (random size fluctuation)
+> 121 |             if (Math.random() > 0.9) {
+      |                 ^^^^^^^^^^^^^ Cannot call impure function
+  122 |                 p.size = Math.max(0.5, p.size + (Math.random() - 0.5));
+  123 |             }
+  124 |                                                                                                                                                                                                               react-hooks/purity
+  122:50  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/benterova/projects/chord_helper/src/components/ParticleSystem.tsx:122:50
+  120 |             // Twinkle effect (random size fluctuation)
+  121 |             if (Math.random() > 0.9) {
+> 122 |                 p.size = Math.max(0.5, p.size + (Math.random() - 0.5));
+      |                                                  ^^^^^^^^^^^^^ Cannot call impure function
+  123 |             }
+  124 |
+  125 |             const alpha = (1 - (p.life / p.maxLife)) * 0.8; // Max opacity 0.8                                                                                               react-hooks/purity
+  144:8   warning  React Hook useEffect has a missing dependency: 'animate'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+
+/home/benterova/projects/chord_helper/src/components/WindowManager.tsx
+  182:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/benterova/projects/chord_helper/src/components/WindowManager.tsx:182:9
+  180 |     const windowsStructureHash = windows.map(w => `${w.id}:${w.isOpen}:${w.isMinimized}`).join('|');
+  181 |     useEffect(() => {
+> 182 |         applyTiledLayout(); // eslint-disable-line react-hooks/exhaustive-deps
+      |         ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  183 |     }, [windowsStructureHash, applyTiledLayout]);
+  184 |
+  185 |  react-hooks/set-state-in-effect
+  182:29  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+✖ 21 problems (17 errors, 4 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

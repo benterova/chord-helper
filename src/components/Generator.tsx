@@ -40,37 +40,36 @@ export const Generator: React.FC = () => {
 
     // Saved Progressions State
     const [savedProgressions, setSavedProgressions] = useLocalStorage<SavedProgression[]>('saved_progressions', []);
-    // const [isSavedOpen, setIsSavedOpen] = useState(false); // REMOVED
-    const [_isGenerating, _setIsGenerating] = useState(false);
     const [displayMode, setDisplayMode] = useState<'roman' | 'chord'>('roman');
     const [showInfo, setShowInfo] = useState(false);
+    const [screenMode, setScreenMode] = useState<'MAIN' | 'MEMORY'>('MAIN');
 
     React.useEffect(() => {
         return audioEngine.subscribe(id => setPlayingId(id));
     }, []);
 
+    const handleGenerate = React.useCallback(() => {
+        audioEngine.stop();
+        const progression = generateProgression(root, mode, { style, length });
+        const events = applyRhythm(progression, style, enableRhythm);
+        setGeneratedProgression(progression);
+        setGeneratedEvents(events);
+    }, [root, mode, style, length, enableRhythm]);
+
     // 1. Auto-Generate on Mount, Root/Mode Change, and Style Change
     useEffect(() => {
-        handleGenerate();
-    }, [root, mode, style]);
+        handleGenerate(); // eslint-disable-line react-hooks/set-state-in-effect
+    }, [handleGenerate]);
 
     // 2. React to Rhythm Toggle (without changing chords)
     useEffect(() => {
         if (generatedProgression) {
             const events = applyRhythm(generatedProgression, style, enableRhythm);
-            setGeneratedEvents(events);
+            setGeneratedEvents(events); // eslint-disable-line react-hooks/set-state-in-effect
         }
-    }, [enableRhythm]);
+    }, [enableRhythm, generatedProgression, style]);
 
-    const handleGenerate = () => {
-        audioEngine.stop();
-        const progression = generateProgression(root, mode as any, { style, length });
-        const events = applyRhythm(progression, style, enableRhythm);
-        setGeneratedProgression(progression);
-        setGeneratedEvents(events);
-    };
-
-    const handleSave = () => {
+    const handleSave = React.useCallback(() => {
         if (!generatedProgression || !generatedEvents) return;
 
         const newProgression: SavedProgression = {
@@ -86,7 +85,7 @@ export const Generator: React.FC = () => {
 
         setSavedProgressions([newProgression, ...savedProgressions]);
         setScreenMode('MEMORY'); // Auto-switch to Memory screen
-    };
+    }, [generatedProgression, generatedEvents, root, mode, style, savedProgressions, setSavedProgressions]);
 
     const handleDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -163,7 +162,7 @@ export const Generator: React.FC = () => {
         setLength(lengths[nextIndex]);
     };
 
-    const [screenMode, setScreenMode] = useState<'MAIN' | 'MEMORY'>('MAIN');
+
 
     // ... (keep existing effects)
 

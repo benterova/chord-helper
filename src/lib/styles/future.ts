@@ -25,7 +25,7 @@ export const future: StyleDef = {
         }
     ],
     optimizeVoicing: (notes: number[]) => {
-        let voiced = [...notes];
+        const voiced = [...notes];
         // Future Bass loves "Super Saws" - essentially 7th/9th chords clustered in mid-high register + Bass.
         // Drop Root 1 octave
         if (voiced[0] > 48) voiced[0] -= 12;

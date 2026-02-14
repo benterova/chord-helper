@@ -25,7 +25,7 @@ export const dark: StyleDef = {
         { name: "Drone", length: 16, pattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0] }
     ],
     optimizeVoicing: (notes: number[]) => {
-        let voiced = [...notes];
+        const voiced = [...notes];
         // Spread wide for cinematic feel
         // Move 3rd (second note usually) up an octave?
         if (voiced.length >= 3) {

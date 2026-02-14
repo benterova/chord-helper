@@ -1,4 +1,4 @@
-import { NOTES, SCALES, type ScaleName } from './constants';
+import { NOTES, SCALES, type ScaleName, type Note } from './constants';
 
 export interface ChordIntervals {
     third: number;
@@ -30,7 +30,7 @@ export interface VariationSequenceItem extends Chord {
 }
 
 export function getScaleNotes(root: string, mode: ScaleName): string[] {
-    const rootIndex = NOTES.indexOf(root as any);
+    const rootIndex = NOTES.indexOf(root as Note);
     if (rootIndex === -1) return [];
 
     const intervals = SCALES[mode.toLowerCase() as ScaleName];
@@ -52,17 +52,17 @@ export function getChords(root: string, mode: ScaleName): Chord[] {
         const ninthNote = scaleNotes[(index + 1) % len]; // 9th is same note class as 2nd
 
         // 2. Calculate intervals from Root to determine quality
-        const rIndex = NOTES.indexOf(rootNote as any);
-        const tIndex = NOTES.indexOf(thirdNote as any);
-        const fIndex = NOTES.indexOf(fifthNote as any);
-        const sIndex = NOTES.indexOf(seventhNote as any);
-        const nIndex = NOTES.indexOf(ninthNote as any);
+        const rIndex = NOTES.indexOf(rootNote as Note);
+        const tIndex = NOTES.indexOf(thirdNote as Note);
+        const fIndex = NOTES.indexOf(fifthNote as Note);
+        const sIndex = NOTES.indexOf(seventhNote as Note);
+        const nIndex = NOTES.indexOf(ninthNote as Note);
 
         // Handle chromatic wrapping
-        let distThird = (tIndex - rIndex + 12) % 12;
-        let distFifth = (fIndex - rIndex + 12) % 12;
-        let distSeventh = (sIndex - rIndex + 12) % 12;
-        let distNinth = (nIndex - rIndex + 12) % 12;
+        const distThird = (tIndex - rIndex + 12) % 12;
+        const distFifth = (fIndex - rIndex + 12) % 12;
+        const distSeventh = (sIndex - rIndex + 12) % 12;
+        const distNinth = (nIndex - rIndex + 12) % 12;
 
         let quality: ChordQuality = 'unknown';
         let suffix = '';
@@ -115,7 +115,7 @@ export function getChords(root: string, mode: ScaleName): Chord[] {
 }
 
 export function getBorrowedChords(root: string, mode: ScaleName): Chord[] {
-    const rootIndex = NOTES.indexOf(root as any);
+    const rootIndex = NOTES.indexOf(root as Note);
     if (rootIndex === -1) return [];
 
     const borrowed: Chord[] = [];
@@ -191,7 +191,7 @@ function getRomanNumeral(num: number): string {
 
 export function getChordMidiNotes(chord: Chord, options: Partial<ChordNoteOptions> = {}): number[] {
     const noteMap: Record<string, number> = { 'C': 60, 'C#': 61, 'D': 62, 'D#': 63, 'E': 64, 'F': 65, 'F#': 66, 'G': 67, 'G#': 68, 'A': 69, 'A#': 70, 'B': 71 };
-    let rootMidi = noteMap[chord.root];
+    const rootMidi = noteMap[chord.root];
 
     let intervals = [0]; // Always root
 
@@ -221,7 +221,7 @@ export function getChordMidiNotes(chord: Chord, options: Partial<ChordNoteOption
 
 export function getChordNotes(chord: Chord): string[] {
     // Re-calculate notes based on intervals and root
-    const rootIndex = NOTES.indexOf(chord.root as any);
+    const rootIndex = NOTES.indexOf(chord.root as Note);
     if (rootIndex === -1) return [];
 
     let intervals = [0]; // Root
@@ -248,7 +248,7 @@ export function generateVariationSequence(indices: number[], chords: Chord[], us
     const applyExtensions = (chord: Chord, degree: number) => {
         if (!useExtensions) return { noteOptions: { extensions: false, variation: false }, suffix: '' };
 
-        let noteOptions: ChordNoteOptions = { extensions: true, variation: false };
+        const noteOptions: ChordNoteOptions = { extensions: true, variation: false };
         let suffix = '7'; // Default to 7th
 
         // Smart 9ths: Add 9th only to stable degrees (I, II, IV, V, vi)
@@ -315,7 +315,7 @@ export function generateVariationSequence(indices: number[], chords: Chord[], us
             const { noteOptions, suffix } = applyExtensions(currentChord, currentChord.degree);
 
             // Get basic notes (Root position)
-            let baseNotes = getChordMidiNotes(currentChord, noteOptions);
+            const baseNotes = getChordMidiNotes(currentChord, noteOptions);
 
             const chordObj: VariationSequenceItem = {
                 ...currentChord,

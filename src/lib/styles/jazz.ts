@@ -25,7 +25,7 @@ export const jazz: StyleDef = {
         }
     ],
     optimizeVoicing: (notes: number[]) => {
-        let voiced = [...notes];
+        const voiced = [...notes];
         // Drop 2 Voicing Strategy (simplified)
         // Take the second highest note and drop it an octave
         if (voiced.length >= 4) {

@@ -58,7 +58,7 @@ export function applySmartVoicing(chords: Chord[]): VoicedChord[] {
         const i2 = [base[2], base[0] + 12, base[1] + 12].sort((a, b) => a - b); // For triads
 
         // If 4 notes (7ths), add 3rd inversion
-        let invs = [i0, i1, i2];
+        const invs = [i0, i1, i2];
         if (base.length > 3) {
             const i3 = [base[3], base[0] + 12, base[1] + 12, base[2] + 12].sort((a, b) => a - b);
             invs.push(i3);

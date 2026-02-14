@@ -23,7 +23,7 @@ export const hyperpop: StyleDef = {
         }
     ],
     optimizeVoicing: (notes: number[]) => {
-        let voiced = [...notes];
+        const voiced = [...notes];
         // Big Stacks.
         // Drop Root 1 octave
         if (voiced[0] > 48) voiced[0] -= 12;

@@ -13,6 +13,7 @@ interface MusicTheoryContextType {
 
 const MusicTheoryContext = createContext<MusicTheoryContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useMusicTheory = () => {
     const context = useContext(MusicTheoryContext);
     if (!context) {

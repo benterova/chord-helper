@@ -21,7 +21,7 @@ export function downloadProgressionMidi(
     const track = new Midi.Track();
     file.addTrack(track);
 
-    let defaultDuration = PPQ;
+    const defaultDuration = PPQ;
 
     sequence.forEach(chord => {
         // midiNotes should already be calculated in sequence item
@@ -41,7 +41,7 @@ export function downloadProgressionMidi(
     // but @types/jsmidgen might define it as number[].
     // If it is a string, we use charCodeAt. If it's a number[], we can just use it.
     // Let's cast to any to handle both or trust the legacy behavior + types.
-    const bytes = file.toBytes() as any;
+    const bytes = file.toBytes() as unknown as string;
     const isString = typeof bytes === 'string';
     const len = bytes.length;
     const byteArray = new Uint8Array(len);
@@ -61,7 +61,7 @@ export function downloadProgressionMidi(
     const safeMode = mode.toLowerCase();
 
     // Generate Filename Tags
-    let tags: string[] = [];
+    const tags: string[] = [];
     if (options.isExtension) tags.push('ext');
     if (options.isVoicing) tags.push('voiced');
 
@@ -123,9 +123,8 @@ export function downloadGeneratedMidi(
 
             // If types block us, cast to any.
             try {
-                // @ts-ignore - jsmidgen supports delay but types might not
                 track.addChord(0, event.notes, event.duration, gap);
-            } catch (e) {
+            } catch {
                 event.notes.forEach((n, i) => {
                     const d = (i === 0) ? gap : 0;
                     track.addNote(0, n, event.duration, d);
@@ -134,7 +133,7 @@ export function downloadGeneratedMidi(
         } else {
             try {
                 track.addChord(0, event.notes, event.duration, 127);
-            } catch (e) {
+            } catch {
                 event.notes.forEach(n => track.addNote(0, n, event.duration));
             }
         }
@@ -142,7 +141,7 @@ export function downloadGeneratedMidi(
         cursor = event.startTime + event.duration;
     });
 
-    const bytes = file.toBytes() as any;
+    const bytes = file.toBytes() as unknown as string;
     const isString = typeof bytes === 'string';
     const len = bytes.length;
     const byteArray = new Uint8Array(len);

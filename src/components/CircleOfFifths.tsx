@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { audioEngine } from '../lib/audio';
 import { type Chord, getChordMidiNotes, getChordNotes } from '../lib/theory';
-import { CIRCLE_OF_FIFTHS, NOTES, MODE_DISPLAY_NAMES, type ScaleName } from '../lib/constants';
+import { CIRCLE_OF_FIFTHS, NOTES, MODE_DISPLAY_NAMES, type ScaleName, type Note } from '../lib/constants';
 import { useMusicTheory } from '../lib/MusicTheoryContext';
 import { ParticleSystem } from './ParticleSystem';
 import { applySmartVoicing } from '../lib/voicing';
@@ -160,7 +160,7 @@ export const CircleOfFifths: React.FC = () => {
         // 2. Relative Minor/Major (same key signature, usually 3 steps away in chromatic... wait, in circle it's same position usually treated as relative? 
         //    No, relative minor is 3 semitones down. In Circle, relative minor/major often shares the same sector in some designs, but here we have unique roots.)
 
-        const lastRootIndex = CIRCLE_OF_FIFTHS.indexOf(lastChord.root as any);
+        const lastRootIndex = CIRCLE_OF_FIFTHS.indexOf(lastChord.root as Note);
         if (lastRootIndex === -1) return;
 
         const nextIndex = (lastRootIndex + 1) % 12; // Dominant (V)
@@ -295,18 +295,18 @@ export const CircleOfFifths: React.FC = () => {
         // Simplified: The interval checks isPlaying? No, the interval runs independently. 
         // We need a ref for the interval ID.
         // Let's do a "Quick fix" style:
-        (window as any)._circleInterval = interval;
+        (window as unknown as Window & { _circleInterval: number })._circleInterval = interval;
     };
 
     // Cleanup interval when component unmounts or stops
     useEffect(() => {
         return () => {
-            if ((window as any)._circleInterval) clearInterval((window as any)._circleInterval);
+            if ((window as unknown as Window & { _circleInterval: number })._circleInterval) clearInterval((window as unknown as Window & { _circleInterval: number })._circleInterval);
         }
     }, []);
 
     const handleStop = () => {
-        if ((window as any)._circleInterval) clearInterval((window as any)._circleInterval);
+        if ((window as unknown as Window & { _circleInterval: number })._circleInterval) clearInterval((window as unknown as Window & { _circleInterval: number })._circleInterval);
         audioEngine.stop();
         setIsPlaying(false);
         setPlaybackIndex(null);

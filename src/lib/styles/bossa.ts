@@ -15,7 +15,7 @@ export const bossa: StyleDef = {
         { name: "Clave", length: 16, pattern: [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0] }
     ],
     optimizeVoicing: (notes: number[]) => {
-        let voiced = [...notes];
+        const voiced = [...notes];
         // Extensions emphasis. Voicing similar to Jazz but maybe less drop-2, more clusters or shell.
         // Ensure Shell (Root, 3, 7) is clear.
         // If we have 9th, keep it on top.

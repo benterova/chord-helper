@@ -1,0 +1,46 @@
+
+> chord_helper@0.0.0 lint
+> eslint .
+
+
+/home/benterova/projects/chord_helper/scripts/verify_rhythms.ts
+  15:7   error  'NOTE_16TH_TICKS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  17:31  error  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+/home/benterova/projects/chord_helper/src/components/Generator.tsx
+  53:63  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  61:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/benterova/projects/chord_helper/src/components/Generator.tsx:61:9
+  59 |     // 1. Auto-Generate on Mount, Root/Mode Change, and Style Change
+  60 |     useEffect(() => {
+> 61 |         handleGenerate();
+     |         ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  62 |     }, [handleGenerate]);
+  63 |
+  64 |     // 2. React to Rhythm Toggle (without changing chords)                               react-hooks/set-state-in-effect
+  68:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/benterova/projects/chord_helper/src/components/Generator.tsx:68:13
+  66 |         if (generatedProgression) {
+  67 |             const events = applyRhythm(generatedProgression, style, enableRhythm);
+> 68 |             setGeneratedEvents(events);
+     |             ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |         }
+  70 |     }, [enableRhythm, generatedProgression, style]);
+  71 |  react-hooks/set-state-in-effect
+
+✖ 5 problems (5 errors, 0 warnings)
+

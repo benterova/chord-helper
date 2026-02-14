@@ -25,7 +25,7 @@ export const jpop: StyleDef = {
         }
     ],
     optimizeVoicing: (notes: number[]) => {
-        let voiced = [...notes];
+        const voiced = [...notes];
         // Big Stacks. J-Pop loves piano voicings (Left Hand Octaves, Right Hand shell+melody).
         // Drop Root 1 octave
         if (voiced[0] > 48) voiced[0] -= 12;

@@ -15,7 +15,7 @@ export const rock: StyleDef = {
         { name: "Alt Rock", length: 16, pattern: [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0] }
     ],
     optimizeVoicing: (notes: number[]) => {
-        let voiced = [...notes];
+        const voiced = [...notes];
         // Power chords preference if triad
         // If triad (1, 3, 5), maybe drop the 3rd or move it up?
         // Actually, keep it simple for now, just ensure root is grounded.

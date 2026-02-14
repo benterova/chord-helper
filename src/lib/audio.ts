@@ -35,7 +35,7 @@ export class AudioEngineImpl {
     private nextBeatTime: number = 0;
 
     constructor() {
-        const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
+        const AudioContextClass = (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
         this.ctx = new AudioContextClass();
 
         this.masterGain = this.ctx.createGain();
@@ -169,7 +169,7 @@ export class AudioEngineImpl {
         }
 
         this.activeNodes.forEach(node => {
-            try { (node as any).stop(); } catch (e) { }
+            try { (node as AudioScheduledSourceNode).stop(); } catch { /* ignore */ }
             node.disconnect();
         });
         this.activeNodes = [];
