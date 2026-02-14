@@ -1198,6 +1198,13 @@ h3 {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
+  .desktop-container {
+    padding-top: 100px !important;
+    /* Push content down below taskbar */
+    height: auto !important;
+    /* Allow scrolling content to extend */
+  }
+
   .aero-taskbar {
     height: auto;
     padding: 6px;
@@ -1240,6 +1247,14 @@ h3 {
   }
 
   /* Circle of Fifths SVG Scaling */
+  .circle-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+  }
+
   .circle-section svg {
     max-width: 100%;
     height: auto;
@@ -1248,6 +1263,9 @@ h3 {
   /* Scale Details Grid */
   .aero-degree-card {
     min-width: 0;
+    width: 48% !important;
+    margin: 1%;
+    box-sizing: border-box;
   }
 
   /* Generator / LCD Container */
@@ -1303,10 +1321,43 @@ h3 {
     font-size: 14px;
     background-attachment: scroll;
     overflow-x: hidden;
-    /* Prevent body scroll */
+    overflow-y: auto !important;
+    /* Force allow vertical scroll */
+    height: auto !important;
+    position: static !important;
+    /* Override potential fixed positioning from lock */
+  }
+
+  /* Override any js-added scroll lock class */
+  body[class*="scroll-lock"],
+  .antigravity-scroll-lock {
+    overflow: auto !important;
+    overflow-y: auto !important;
+    position: static !important;
   }
 
   #root {
     overflow-x: hidden;
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+
+  /* Strict Window Constraints */
+  .win7-window {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .win7-title-text {
+    white-space: normal !important;
+    /* Allow wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px !important;
+    width: 100%;
   }
 }
