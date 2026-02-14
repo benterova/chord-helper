@@ -25,9 +25,10 @@ export const Clippy: React.FC<ClippyProps> = ({ isVisible, onClose }) => {
                                 <strong>Need some help?</strong>
                                 <p style={{ margin: '5px 0', fontSize: '11px' }}>
                                     <b>GEN:</b> Create a new progression.<br />
-                                    <b>RHY:</b> Add drum backing track.<br />
+                                    <b>RHY:</b> Add rhythm & bass.<br />
                                     <b>MEM:</b> Save/Load your favorites.<br />
-                                    <b>VIEW:</b> Toggle Roman numerals.
+                                    <b>VIEW:</b> Toggle Roman numerals.<br />
+                                    <b>◄◄ / ►►:</b> Cycle musical styles.
                                 </p>
                                 <div style={{ display: 'flex', gap: '5px', marginTop: '8px' }}>
                                     <button className="clippy-close-btn" onClick={onClose} style={{ flex: 1 }}>

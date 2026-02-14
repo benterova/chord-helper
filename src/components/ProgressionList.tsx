@@ -19,7 +19,7 @@ export const ProgressionList: React.FC = () => {
 
     // Helpers
     const getProgressionChords = (indices: number[]): (Chord | undefined)[] => {
-        return indices.map(idx => chords.find(c => c.degree === idx));
+        return indices.map(idx => chords.find(c => c.degree === idx + 1));
     };
 
     const getStyleFromGenre = (genre: string): Style => {
@@ -159,7 +159,7 @@ export const ProgressionList: React.FC = () => {
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                 <div style={{ fontWeight: '600', color: '#003366' }}>{prog.name}</div>
                                 <div style={{ fontSize: '0.8em', color: '#555' }}>
-                                    {prog.indices.map(i => chords.find(c => c.degree === i)?.roman).join(' - ')}
+                                    {prog.indices.map(i => chords.find(c => c.degree === i + 1)?.roman).join(' - ')}
                                 </div>
                             </div>
                             <div style={{ width: '80px', display: 'flex', alignItems: 'center', color: '#005580' }}>
