@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { STYLES, type Style, generateProgression, applyRhythm, type MidiEvent } from '../lib/engine';
-import { downloadGeneratedMidi } from '../lib/midi';
+// import { downloadGeneratedMidi } from '../lib/midi';
 import type { Chord } from '../lib/theory';
 import { audioEngine } from '../lib/audio';
 import useLocalStorage from '../hooks/useLocalStorage';
@@ -92,11 +92,11 @@ export const Generator: React.FC = () => {
         setSavedProgressions(savedProgressions.filter(p => p.id !== id));
     };
 
-    const handleDownload = (progression: { events: MidiEvent[]; root: string; mode: string; style: Style; chords: Chord[] }) => {
-        if (!progression.events) return;
-        const name = progression.chords.map(c => c.chordName).join('-');
-        downloadGeneratedMidi(name, progression.events, progression.root, progression.mode, progression.style);
-    };
+    // const handleDownload = (progression: { events: MidiEvent[]; root: string; mode: string; style: Style; chords: Chord[] }) => {
+    //     if (!progression.events) return;
+    //     const name = progression.chords.map(c => c.chordName).join('-');
+    //     downloadGeneratedMidi(name, progression.events, progression.root, progression.mode, progression.style);
+    // };
 
     const handlePlay = (id: string, events: MidiEvent[]) => {
         if (playingId === id) {
