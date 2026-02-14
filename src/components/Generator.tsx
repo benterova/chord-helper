@@ -42,10 +42,10 @@ export const Generator: React.FC = () => {
         return audioEngine.subscribe(id => setPlayingId(id));
     }, []);
 
-    // 1. Auto-Generate on Mount and Root/Mode Change
+    // 1. Auto-Generate on Mount, Root/Mode Change, and Style Change
     useEffect(() => {
         handleGenerate();
-    }, [root, mode]);
+    }, [root, mode, style]);
 
     // 2. React to Rhythm Toggle (without changing chords)
     useEffect(() => {
