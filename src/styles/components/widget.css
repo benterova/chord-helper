@@ -100,8 +100,8 @@
 
 /* === THE SCREEN (Liquid Bezel) === */
 .aero-lcd-container {
-    width: 320px;
-    height: 160px;
+    width: 360px;
+    height: 180px;
     background: #000;
 
     /* Smooth transition from body */

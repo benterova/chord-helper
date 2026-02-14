@@ -86,26 +86,8 @@ function App() {
                   className={`taskbar-item ${isPlayerOpen ? 'active' : ''}`}
                   onClick={() => setIsPlayerOpen(!isPlayerOpen)}
                   id="midi-generator-taskbar-btn"
-                  style={{
-                    background: isPlayerOpen ? 'linear-gradient(to bottom, #d9f2ff 0%, #87cfff 100%)' : 'transparent',
-                    border: isPlayerOpen ? '1px solid #3c7fb1' : '1px solid transparent',
-                    borderRadius: '4px',
-                    padding: '4px 12px',
-                    color: isPlayerOpen ? '#003366' : 'rgba(255,255,255,0.9)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    textShadow: isPlayerOpen ? '0 1px 0 rgba(255,255,255,0.7)' : '0 1px 2px rgba(0,0,0,0.5)',
-                    boxShadow: isPlayerOpen
-                      ? 'inset 0 1px 3px rgba(0,0,0,0.2), 0 0 5px rgba(135, 207, 255, 0.8)'
-                      : 'none',
-                    fontWeight: isPlayerOpen ? 'bold' : 'normal',
-                    transition: 'all 0.2s ease',
-                    minWidth: '140px'
-                  }}
                 >
-                  <img src="app_icon.png" alt="" style={{ width: 16, height: 16, filter: isPlayerOpen ? 'none' : 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }}
+                  <img src="app_icon.png" alt="" style={{ width: 16, height: 16 }}
                     onError={(e) => e.currentTarget.style.display = 'none'} />
                   <span>MIDI Generator</span>
                 </button>

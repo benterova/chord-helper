@@ -177,6 +177,75 @@
     background: rgba(0, 0, 0, 0.1);
 }
 
+/* Taskbar Application Items (Running Apps) */
+.taskbar-item {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 4px 12px;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    font-weight: normal;
+    transition: all 0.2s ease;
+    min-width: 140px;
+    position: relative;
+    overflow: hidden;
+    margin-right: 4px;
+}
+
+.taskbar-item:hover {
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(255, 255, 255, 0.05) 51%,
+            rgba(255, 255, 255, 0) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.taskbar-item.active {
+    /* "Pressed" state - Darkened, inset look */
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.2) 0%,
+            rgba(0, 0, 0, 0.1) 100%);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.5),
+        /* Deep inset at top */
+        0 1px 0 rgba(255, 255, 255, 0.1);
+    /* Highlight at bottom edge */
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.6);
+    /* Glowing text */
+    font-weight: 600;
+}
+
+.taskbar-item.active::before {
+    /* Inner glow overlay */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(100, 200, 255, 0.15), transparent 70%);
+    pointer-events: none;
+}
+
+.taskbar-item img {
+    transition: filter 0.2s;
+}
+
+.taskbar-item.active img {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+
+
 @media (max-width: 768px) {
     .aero-taskbar {
         height: auto;
