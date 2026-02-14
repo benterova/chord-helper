@@ -19,8 +19,19 @@ export const GlobalSettings: React.FC = () => {
     }, [isMetronome]);
 
     useEffect(() => {
-        audioEngine.setLoop(isLoop);
+        // Subscribe to external changes
+        const unsubscribe = audioEngine.subscribeLoop((looping) => {
+            if (isLoop !== looping) setIsLoop(looping);
+        });
+        return unsubscribe;
     }, [isLoop]);
+
+    // Handle user toggle
+    const handleLoopToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.checked;
+        setIsLoop(newValue);
+        audioEngine.setLoop(newValue);
+    };
 
     const handleStopAll = () => {
         audioEngine.stop();
@@ -44,7 +55,7 @@ export const GlobalSettings: React.FC = () => {
                     <input
                         type="checkbox"
                         checked={isLoop}
-                        onChange={e => setIsLoop(e.target.checked)}
+                        onChange={handleLoopToggle}
                     />
                     Loop
                 </label>

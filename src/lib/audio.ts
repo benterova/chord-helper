@@ -16,6 +16,7 @@ export class AudioEngineImpl {
     // State tracking
     private playingId: string | null = null;
     private listeners: ((playingId: string | null) => void)[] = [];
+    private loopListeners: ((isLooping: boolean) => void)[] = [];
 
     // Metronome state
     private bpm: number = 120;
@@ -50,12 +51,29 @@ export class AudioEngineImpl {
         };
     }
 
+    public subscribeLoop(callback: (isLooping: boolean) => void) {
+        this.loopListeners.push(callback);
+        // Immediately verify current state
+        callback(this.isLooping);
+        return () => {
+            this.loopListeners = this.loopListeners.filter(l => l !== callback);
+        };
+    }
+
     private notify() {
         this.listeners.forEach(l => l(this.playingId));
     }
 
+    private notifyLoop() {
+        this.loopListeners.forEach(l => l(this.isLooping));
+    }
+
     public getPlayingId() {
         return this.playingId;
+    }
+
+    public getLoop() {
+        return this.isLooping;
     }
 
     private midiToFreq(midi: number): number {
@@ -69,7 +87,10 @@ export class AudioEngineImpl {
     }
 
     public setLoop(enabled: boolean) {
-        this.isLooping = enabled;
+        if (this.isLooping !== enabled) {
+            this.isLooping = enabled;
+            this.notifyLoop();
+        }
     }
 
     public stop() {

@@ -113,6 +113,8 @@ export const CircleOfFifths: React.FC = () => {
     // Options
     const [useSmartVoicing, setUseSmartVoicing] = useState(true);
 
+    const [isLooping, setIsLooping] = useState(false); // New: Loop Toggle
+
     // --- DnD Sensors ---
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -224,6 +226,27 @@ export const CircleOfFifths: React.FC = () => {
         }
     };
 
+    // Ref to access current isLooping in interval
+    const isLoopingRef = useRef(isLooping);
+
+    // Subscribe to Audio Engine Loop State
+    useEffect(() => {
+        const unsubscribe = audioEngine.subscribeLoop((looping) => {
+            if (isLooping !== looping) {
+                setIsLooping(looping);
+            }
+            isLoopingRef.current = looping;
+        });
+        return unsubscribe;
+    }, [isLooping]);
+
+    // Handle Toggle
+    const toggleLoop = () => {
+        const newState = !isLooping;
+        setIsLooping(newState);
+        audioEngine.setLoop(newState);
+    };
+
     const handlePlaySequence = async () => {
         if (customSequence.length === 0) return;
 
@@ -241,6 +264,7 @@ export const CircleOfFifths: React.FC = () => {
             : customSequence.map(i => ({ notes: getChordMidiNotes(i.chord), duration: 1.0 }));
 
         // Play Audio
+        audioEngine.setLoop(isLoopingRef.current);
         audioEngine.playProgression(sequenceToPlay, 'circle-custom');
 
         // Visual Sync
@@ -250,20 +274,49 @@ export const CircleOfFifths: React.FC = () => {
         const interval = setInterval(() => {
             idx++;
             if (idx >= sequenceToPlay.length) {
-                clearInterval(interval);
-                setIsPlaying(false);
-                setPlaybackIndex(null);
+                if (isLoopingRef.current) {
+                    idx = 0;
+                    setPlaybackIndex(0);
+                } else {
+                    clearInterval(interval);
+                    setIsPlaying(false);
+                    setPlaybackIndex(null);
+                }
             } else {
                 setPlaybackIndex(idx);
             }
         }, 1000); // 1.0s duration
+
+        // Cleanup interval on unmount or stop (though stop handles clearing isPlaying via state usually, we need to clear this specific interval)
+        // We can attach it to a ref if we want to clear it from outside, but for now relies on component unmount or state logic?
+        // The stop() function on handler clears calls audioEngine.stop(). 
+        // We need to clear this interval if the user hits stop manually.
+        // A better way is using a useEffect for the playback state.
+
+        // For now, let's store interval in a ref to clear it in handleClear/Stop
+        // Simplified: The interval checks isPlaying? No, the interval runs independently. 
+        // We need a ref for the interval ID.
+        // Let's do a "Quick fix" style:
+        (window as any)._circleInterval = interval;
+    };
+
+    // Cleanup interval when component unmounts or stops
+    useEffect(() => {
+        return () => {
+            if ((window as any)._circleInterval) clearInterval((window as any)._circleInterval);
+        }
+    }, []);
+
+    const handleStop = () => {
+        if ((window as any)._circleInterval) clearInterval((window as any)._circleInterval);
+        audioEngine.stop();
+        setIsPlaying(false);
+        setPlaybackIndex(null);
     };
 
     const handleClear = () => {
+        handleStop();
         setCustomSequence([]);
-        setPlaybackIndex(null);
-        audioEngine.stop();
-        setIsPlaying(false);
     };
 
     const handleRemoveLast = () => {
@@ -301,7 +354,7 @@ export const CircleOfFifths: React.FC = () => {
 
             {/* --- LEFT SIDEBAR: Custom Sequence --- */}
             <div className="aero-sidebar" style={{
-                width: '160px',
+                width: '180px', // Slightly wider for controls
                 display: 'flex',
                 flexDirection: 'column',
                 borderRight: '1px solid rgba(255,255,255,0.5)',
@@ -310,9 +363,60 @@ export const CircleOfFifths: React.FC = () => {
                 backdropFilter: 'blur(5px)',
                 boxShadow: '5px 0 15px rgba(0,0,0,0.05)'
             }}>
-                {/* Header / Rec Status */}
-                <div style={{ padding: '8px', borderBottom: '1px solid rgba(255,255,255,0.5)', textAlign: 'center', fontSize: '11px', color: '#555', fontWeight: '600' }}>
-                    {isRecording ? 'Recording...' : 'Sequence'}
+                {/* Header Control Panel */}
+                <div style={{ padding: '8px', borderBottom: '1px solid rgba(255,255,255,0.5)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ fontSize: '12px', color: '#004466', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Progression
+                        </div>
+                        <div style={{ fontSize: '10px', color: isRecording ? '#cc0000' : '#888', fontWeight: '600', animation: isRecording ? 'pulse 1s infinite' : 'none' }}>
+                            {isRecording ? 'RECORDING' : 'READY'}
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
+                        <button
+                            className={`silver-btn silver-btn-small ${isRecording ? 'active' : ''}`}
+                            onClick={() => setIsRecording(!isRecording)}
+                            title="Toggle Record Mode"
+                            style={{
+                                border: isRecording ? '1px solid #ff0000' : undefined,
+                                color: isRecording ? '#cc0000' : undefined,
+                                fontWeight: 'bold'
+                            }}>
+                            {isRecording ? '●' : '○'}
+                        </button>
+                        <button className={`silver-btn silver-btn-small ${isPlaying ? 'active' : ''}`} onClick={isPlaying ? handleStop : handlePlaySequence} title={isPlaying ? "Stop" : "Play"}>
+                            {isPlaying ? '■' : '▶'}
+                        </button>
+
+                        <button
+                            className={`silver-btn silver-btn-small ${isLooping ? 'active' : ''}`}
+                            onClick={toggleLoop}
+                            title="Toggle Loop"
+                            style={{
+                                color: isLooping ? '#0066cc' : '#555',
+                                fontWeight: isLooping ? 'bold' : 'normal',
+                                background: isLooping ? 'linear-gradient(to bottom, #d0e8ff, #f0f8ff)' : undefined,
+                                borderColor: isLooping ? '#0066cc' : undefined,
+                                boxShadow: isLooping ? 'inset 0 1px 4px rgba(0, 100, 200, 0.3)' : undefined
+                            }}>
+                            🔁
+                        </button>
+
+                        <button className="silver-btn silver-btn-small" onClick={handleDownload} title="Export MIDI">
+                            ⬇
+                        </button>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                        <button className="silver-btn silver-btn-small" onClick={handleRemoveLast} title="Undo" style={{ flex: 1 }}>
+                            Undo
+                        </button>
+                        <button className="silver-btn silver-btn-small" onClick={handleClear} title="Clear All" style={{ flex: 1 }}>
+                            Clear
+                        </button>
+                    </div>
                 </div>
 
                 {/* Progression List (Sortable) */}
@@ -327,8 +431,10 @@ export const CircleOfFifths: React.FC = () => {
                             strategy={verticalListSortingStrategy}
                         >
                             {customSequence.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '10px', color: '#8899aa', fontSize: '10px', fontStyle: 'italic', border: '1px dashed rgba(0,0,0,0.1)', borderRadius: '6px', marginTop: '10px' }}>
-                                    Empty
+                                <div style={{ textAlign: 'center', padding: '20px 10px', color: '#8899aa', fontSize: '11px', fontStyle: 'italic' }}>
+                                    <div style={{ marginBottom: '5px', fontSize: '16px' }}>🎹</div>
+                                    Drag items to reorder<br />
+                                    Enable Record (●) to add chords
                                 </div>
                             ) : (
                                 customSequence.map((item, i) => (
@@ -342,35 +448,6 @@ export const CircleOfFifths: React.FC = () => {
                             )}
                         </SortableContext>
                     </DndContext>
-                </div>
-
-                {/* Bottom Actions */}
-                <div style={{ padding: '8px', borderTop: '1px solid rgba(255,255,255,0.5)', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
-                    <button
-                        className={`silver-btn silver-btn-small ${isRecording ? 'active' : ''}`}
-                        onClick={() => setIsRecording(!isRecording)}
-                        title="Toggle Record Mode"
-                        style={{
-                            padding: '2px',
-                            border: isRecording ? '1px solid #ff0000' : undefined,
-                            color: isRecording ? '#cc0000' : undefined,
-                            boxShadow: isRecording ? '0 0 5px rgba(255,0,0,0.4), inset 0 1px 0 #fff' : undefined,
-                            fontWeight: 'bold'
-                        }}>
-                        {isRecording ? '●' : '○'}
-                    </button>
-                    <button className="silver-btn silver-btn-small" onClick={handlePlaySequence} title="Play" style={{ padding: '2px' }}>
-                        {isPlaying ? '■' : '▶'}
-                    </button>
-                    <button className="silver-btn silver-btn-small" onClick={handleRemoveLast} title="Undo" style={{ padding: '2px' }}>
-                        ↶
-                    </button>
-                    <button className="silver-btn silver-btn-small" onClick={handleClear} title="Clear" style={{ padding: '2px' }}>
-                        🗑
-                    </button>
-                    <button className="silver-btn silver-btn-small" onClick={handleDownload} title="MIDI" style={{ padding: '2px' }}>
-                        ⬇
-                    </button>
                 </div>
             </div>
 
