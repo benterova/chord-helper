@@ -11,12 +11,7 @@ export const Header: React.FC = () => {
             <img
                 src={aeroLogo}
                 alt="Chord Helper"
-                style={{
-                    height: '40px',
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 0 5px rgba(0, 255, 255, 0.5))', // Add extra glow
-                    cursor: 'pointer'
-                }}
+                className="taskbar-start-btn"
                 onClick={() => window.location.reload()}
             />
         </header>

@@ -4,37 +4,223 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: 48px;
+    /* Slightly more compact Windows 7 feel */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.5rem;
+    padding: 0 10px;
     z-index: 1000;
 
-    /* Glass Taskbar */
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(15px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 4px 15px rgba(0, 174, 255, 0.15);
+    /* Bright Glass Taskbar */
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.85) 0%,
+            rgba(240, 250, 255, 0.8) 50%,
+            rgba(200, 240, 255, 0.85) 51%,
+            rgba(220, 250, 255, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    border-bottom: 2px solid rgba(150, 200, 220, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 150, 255, 0.2);
 }
 
 .aero-taskbar::after {
-    /* Gloss shine at top of taskbar */
+    /* Gloss shine at top of taskbar - Brighter */
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 50%;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.1) 100%);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.2) 100%);
     pointer-events: none;
 }
 
 .taskbar-divider {
-    width: 1px;
+    width: 2px;
     height: 32px;
-    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.2), transparent);
-    border-right: 1px solid rgba(255, 255, 255, 0.5);
+    background: linear-gradient(to bottom, transparent, rgba(0, 100, 150, 0.2), transparent);
+    border-right: 1px solid rgba(255, 255, 255, 0.6);
+    margin: 0 12px;
+}
+
+/* Control Groups */
+.taskbar-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.taskbar-label {
+    font-size: 0.8rem;
+    color: #003366;
+    /* Deep Navy Blue for high contrast */
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 800;
+    /* Extra bold */
+}
+
+/* Taskbar Inputs */
+.taskbar-select {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(240, 250, 255, 0.8) 100%);
+    border: 1px solid #88aabb;
+    border-radius: 4px;
+    color: #004466;
+    padding: 3px 8px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 1);
+    outline: none;
+    cursor: pointer;
+    text-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.taskbar-select:hover {
+    border-color: #00aeff;
+    background: linear-gradient(to bottom, #ffffff 0%, #e6f7ff 100%);
+    box-shadow: 0 0 5px rgba(0, 174, 255, 0.4);
+}
+
+.taskbar-select option {
+    background: #ffffff;
+    color: #333;
+}
+
+/* Taskbar Buttons - MakeAero Reference Style (Light) */
+.taskbar-btn {
+    position: relative;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6) 0%, rgba(230, 240, 250, 0.3) 100%);
+    border: 1px solid #aaccdd;
+    border-radius: 6px;
+    color: #004466;
+    /* Darker text */
+    padding: 4px 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+/* Gel Highlight */
+.taskbar-btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.2));
+    border-radius: 5px 5px 30% 30%;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.taskbar-btn:hover {
+    background: linear-gradient(to bottom, #ffffff 0%, #e6f7ff 100%);
+    border-color: #00aeff;
+    box-shadow: 0 0 8px rgba(0, 174, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 1);
+    color: #004466;
+    transform: translateY(-1px);
+}
+
+.taskbar-btn:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-color: #0088cc;
+}
+
+.taskbar-btn.active {
+    background: linear-gradient(to bottom, #dbefff 0%, #b3d9ff 100%);
+    border: 1px solid #0088cc;
+    box-shadow: inset 0 2px 5px rgba(0, 100, 200, 0.1), 0 0 5px rgba(0, 150, 255, 0.4);
+    color: #004466;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Reset Button - Specific "Action" Style - Keeping it Blue but Brighter */
+.taskbar-btn-reset {
+    position: relative;
+    background: linear-gradient(to bottom, #4da6ff 0%, #007acc 100%);
+    border: 1px solid #005588;
+    border-top-color: #66b3ff;
+    border-radius: 6px;
+    color: white;
+    padding: 4px 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 2px rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.taskbar-btn-reset::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1));
+    border-radius: 5px 5px 30% 30%;
+    pointer-events: none;
+}
+
+.taskbar-btn-reset:hover {
+    background: linear-gradient(to bottom, #66b3ff 0%, #0088e6 100%);
+    box-shadow: 0 0 12px rgba(0, 200, 255, 0.6), inset 0 0 5px rgba(255, 255, 255, 0.6);
+    transform: translateY(-1px);
+}
+
+.taskbar-btn-reset:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.taskbar-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #003366;
+    /* Deep Navy */
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.taskbar-checkbox input {
+    /* We'll override this with the global input.css styles, but keeping accent for fallback */
+    accent-color: #00aeff;
+    cursor: pointer;
+}
+
+/* Start Button (Logo) */
+.taskbar-start-btn {
+    height: 42px;
+    padding: 0 5px;
+    border-radius: 50%;
+    /* Circle look if desired, or simpler glow */
+    transition: filter 0.3s ease, transform 0.2s;
+    cursor: pointer;
+}
+
+.taskbar-start-btn:hover {
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) brightness(1.1);
+    transform: scale(1.05);
+}
+
+.taskbar-start-btn:active {
+    transform: scale(0.95);
+    filter: brightness(0.9);
 }
 
 @media (max-width: 768px) {
