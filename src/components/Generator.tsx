@@ -124,163 +124,135 @@ export const Generator: React.FC = () => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent' }}>
             {/* Scrollable Content Area */}
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', padding: '10px' }}>
 
                 {/* Top LCD Display Area */}
-                <div style={{ padding: '15px', flexShrink: 0 }}>
-                    <div className="lcd-display" style={{ minHeight: '80px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-                        {generatedProgression ? (
-                            <>
-                                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>
-                                    {generatedProgression.map(c => c.chordName).join(' - ')}
+                <div style={{ padding: '0 0 15px 0', flexShrink: 0 }}>
+                    <div className="aero-lcd-container">
+                        <div className="aero-lcd-screen">
+                            {generatedProgression ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                                    <div style={{ fontSize: '1.4em', fontWeight: 'bold', color: '#fff', textShadow: '0 0 10px rgba(0,255,255,0.8)' }}>
+                                        {generatedProgression.map(c => c.chordName).join(' - ')}
+                                    </div>
+                                    <div style={{ fontSize: '1em', color: 'rgba(255,255,255,0.7)' }}>
+                                        {generatedProgression.map(c => c.roman).join(' - ')}
+                                    </div>
+                                    <div style={{ fontSize: '0.8em', color: '#00ffcc', marginTop: '5px' }}>
+                                        Style: {style} • {length} Bars
+                                    </div>
                                 </div>
-                                <div style={{ fontSize: '0.9em', opacity: 0.7, marginTop: '5px' }}>
-                                    {generatedProgression.map(c => c.roman).join(' - ')}
-                                </div>
-                            </>
-                        ) : (
-                            <div style={{ opacity: 0.5 }}>Waiting for input...</div>
-                        )}
+                            ) : (
+                                <div style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Ready to Generate...</div>
+                            )}
+                        </div>
+                        <div className="aero-lcd-gloss"></div>
                     </div>
                 </div>
 
-                {/* WMP Control Interface */}
-                <div className="wmp-controls" style={{ flexShrink: 0 }}>
+                {/* Control Interface - Shiny Buttons */}
+                <div className="aero-controls-panel">
                     <button
-                        className="wmp-btn-round"
+                        className="aero-btn-round"
                         title="Generate New"
                         onClick={handleGenerate}
                     >
-                        ↻
+                        <span style={{ fontSize: '1.5em', transform: 'rotate(45deg)', display: 'block' }}>↻</span>
                     </button>
 
                     <button
-                        className="wmp-btn-round large"
+                        className="aero-btn-main"
                         title={playingId === 'generator' ? "Stop" : "Play"}
                         onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
                         disabled={!generatedEvents}
-                        style={{ color: playingId === 'generator' ? '#d00' : '#1e5799' }}
                     >
                         {playingId === 'generator' ? '■' : '▶'}
                     </button>
 
-                    <button
-                        className="wmp-btn-round"
-                        title="Save"
-                        onClick={handleSave}
-                        disabled={!generatedProgression}
-                    >
-                        💾
-                    </button>
-                    <button
-                        className="wmp-btn-round"
-                        title="Download MIDI"
-                        onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
-                        disabled={!generatedProgression}
-                    >
-                        ⬇
-                    </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <button
+                            className="aero-btn-small"
+                            title="Save"
+                            onClick={handleSave}
+                            disabled={!generatedProgression}
+                        >
+                            💾
+                        </button>
+                        <button
+                            className="aero-btn-small"
+                            title="Download MIDI"
+                            onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
+                            disabled={!generatedProgression}
+                        >
+                            ⬇
+                        </button>
+                    </div>
                 </div>
 
-                {/* Configuration Panel */}
-                <div style={{ padding: '15px', background: '#f9f9f9', borderBottom: '1px solid #d9d9d9', flexShrink: 0 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                        <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.9rem' }}>
-                            <span style={{ marginBottom: '4px', color: '#555' }}>Style</span>
-                            <select
-                                value={style}
-                                onChange={(e) => setStyle(e.target.value as Style)}
-                                style={{ padding: '4px', border: '1px solid #ccc', borderRadius: '3px' }}
-                            >
-                                {Object.values(STYLES).map(s => {
-                                    let label = styleLabels[s] || (s.charAt(0).toUpperCase() + s.slice(1));
-                                    return <option key={s} value={s}>{label}</option>;
-                                })}
-                            </select>
-                        </label>
-
-                        <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.9rem' }}>
-                            <span style={{ marginBottom: '4px', color: '#555' }}>Length</span>
-                            <select
-                                value={length}
-                                onChange={(e) => setLength(parseInt(e.target.value, 10))}
-                                style={{ padding: '4px', border: '1px solid #ccc', borderRadius: '3px' }}
-                            >
-                                <option value="4">4 Bars</option>
-                                <option value="8">8 Bars</option>
-                                <option value="16">16 Bars</option>
-                            </select>
-                        </label>
+                {/* Configuration Panel - Glass Panel */}
+                <div className="aero-config-panel">
+                    <div className="aero-form-row">
+                        <label>Style</label>
+                        <select
+                            value={style}
+                            onChange={(e) => setStyle(e.target.value as Style)}
+                            className="aero-select"
+                        >
+                            {Object.values(STYLES).map(s => {
+                                let label = styleLabels[s] || (s.charAt(0).toUpperCase() + s.slice(1));
+                                return <option key={s} value={s}>{label}</option>;
+                            })}
+                        </select>
                     </div>
-                    <div style={{ marginTop: '10px' }}>
-                        <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
-                            <input type="checkbox" checked={enableRhythm} onChange={(e) => setEnableRhythm(e.target.checked)} style={{ marginRight: '6px' }} />
-                            Enable Rhythm Pattern
+
+                    <div className="aero-form-row">
+                        <label>Length</label>
+                        <select
+                            value={length}
+                            onChange={(e) => setLength(parseInt(e.target.value, 10))}
+                            className="aero-select"
+                        >
+                            <option value="4">4 Bars</option>
+                            <option value="8">8 Bars</option>
+                            <option value="16">16 Bars</option>
+                        </select>
+                    </div>
+
+                    <div className="aero-form-row">
+                        <label className="aero-checkbox">
+                            <input type="checkbox" checked={enableRhythm} onChange={(e) => setEnableRhythm(e.target.checked)} />
+                            <span>Rhythm Pattern</span>
                         </label>
                     </div>
                 </div>
 
                 {/* Saved List (Collapsible) */}
-                <div style={{ flex: '1 0 auto', padding: '0' }}>
+                <div style={{ flex: '1 0 auto', marginTop: '15px' }}>
                     <button
                         onClick={() => setIsSavedOpen(!isSavedOpen)}
-                        style={{
-                            width: '100%',
-                            padding: '8px 15px',
-                            background: '#fcfcfc',
-                            border: 'none',
-                            borderBottom: '1px solid #e0e0e0',
-                            textAlign: 'left',
-                            cursor: 'pointer',
-                            color: '#333',
-                            fontWeight: 600,
-                            fontSize: '0.9rem'
-                        }}
+                        className="aero-accordion-header"
                     >
                         {isSavedOpen ? '▼' : '▶'} Saved Items ({savedProgressions.length})
                     </button>
 
                     {isSavedOpen && (
-                        <div style={{ background: '#fff' }}>
+                        <div className="aero-accordion-content">
                             {savedProgressions.map(prog => (
-                                <div
-                                    key={prog.id}
-                                    style={{
-                                        padding: '8px 15px',
-                                        borderBottom: '1px solid #f0f0f0',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        fontSize: '0.9rem'
-                                    }}
-                                >
+                                <div key={prog.id} className="aero-saved-item">
                                     <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', marginRight: '10px' }}>
-                                        <div style={{ fontWeight: 600, color: '#333' }}>{prog.name}</div>
-                                        <div style={{ fontSize: '0.85em', color: '#777' }}>
+                                        <div style={{ fontWeight: 600, color: '#004466' }}>{prog.name}</div>
+                                        <div style={{ fontSize: '0.85em', color: '#0088aa' }}>
                                             {prog.chords.map(c => c.chordName).join('-')}
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '4px' }}>
-                                        <button
-                                            onClick={() => handlePlay(prog.id, prog.events)}
-                                            style={{ border: '1px solid #ccc', background: '#f5f5f5', borderRadius: '3px', cursor: 'pointer', padding: '2px 6px' }}
-                                        >
+                                        <button className="aero-mini-btn" onClick={() => handlePlay(prog.id, prog.events)}>
                                             {playingId === prog.id ? '■' : '▶'}
                                         </button>
-                                        <button
-                                            onClick={() => handleDownload(prog)}
-                                            style={{ border: '1px solid #ccc', background: '#f5f5f5', borderRadius: '3px', cursor: 'pointer', padding: '2px 6px' }}
-                                        >
-                                            ⬇
-                                        </button>
-                                        <button
-                                            onClick={(e) => handleDelete(prog.id, e)}
-                                            style={{ border: '1px solid #ccc', background: '#fff0f0', color: '#d00', borderRadius: '3px', cursor: 'pointer', padding: '2px 6px' }}
-                                        >
-                                            ✕
-                                        </button>
+                                        <button className="aero-mini-btn" onClick={() => handleDownload(prog)}>⬇</button>
+                                        <button className="aero-mini-btn delete" onClick={(e) => handleDelete(prog.id, e)}>✕</button>
                                     </div>
                                 </div>
                             ))}

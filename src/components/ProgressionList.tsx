@@ -1,149 +1,119 @@
 import React, { useState } from 'react';
 import { audioEngine } from '../lib/audio';
-import { generateVariationSequence } from '../lib/theory';
+import { type Chord, getChordMidiNotes } from '../lib/theory';
 import { PROGRESSIONS } from '../lib/constants';
-import { downloadProgressionMidi } from '../lib/midi';
 import { useMusicTheory } from '../lib/MusicTheoryContext';
 
 export const ProgressionList: React.FC = () => {
-    const { root, mode, chords } = useMusicTheory();
-    const [isExtension, setIsExtension] = useState(false);
-    const [isVoicing, setIsVoicing] = useState(false);
-    const [isVariation, setIsVariation] = useState(false);
-    const [playingId, setPlayingId] = useState<string | null>(null);
+    const { root, chords, mode } = useMusicTheory();
     const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [playingId, setPlayingId] = useState<string | null>(null);
 
-    React.useEffect(() => {
-        return audioEngine.subscribe(id => setPlayingId(id));
-    }, []);
+    const matchProgressions = PROGRESSIONS[mode] || [];
 
-    const progs = PROGRESSIONS[mode] || [];
-
-    const handleDownload = (progName: string, indices: number[], _genre: string) => {
-        const sequence = generateVariationSequence(indices, chords, isVariation, isExtension, isVoicing);
-        downloadProgressionMidi(progName, sequence, root, mode, {
-            isVariation,
-            isExtension,
-            isVoicing
-        });
+    // Helpers
+    const getProgressionChords = (indices: number[]): (Chord | undefined)[] => {
+        return indices.map(idx => chords.find(c => c.degree === idx));
     };
 
-    const handlePlay = (indices: number[], id: string) => {
-        if (playingId === id) {
-            audioEngine.stop();
-            return;
+    const handlePlay = async (indices: number[], id: string) => {
+        if (playingId) return;
+        setPlayingId(id);
+        const progChords = getProgressionChords(indices);
+
+        for (const chord of progChords) {
+            if (chord) {
+                const notes = getChordMidiNotes(chord);
+                audioEngine.playNotes(notes, 0.8);
+                await new Promise(r => setTimeout(r, 1000));
+            }
         }
-
-        const sequence = generateVariationSequence(indices, chords, isVariation, isExtension, isVoicing);
-        const BPM = 120;
-        const secondsPerBeat = 60 / BPM;
-
-        const audioSequence = sequence.map(chord => ({
-            notes: chord.midiNotes,
-            duration: 4 * secondsPerBeat
-        }));
-
-        audioEngine.playProgression(audioSequence, id);
+        setPlayingId(null);
     };
 
     const handleStop = () => {
+        setPlayingId(null);
         audioEngine.stop();
     };
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            {/* Windows 7 Toolbar */}
-            <div className="win7-toolbar" style={{ justifyContent: 'space-between', paddingRight: '10px' }}>
-                <div style={{ display: 'flex', gap: '2px' }}>
-                    {selectedId !== null ? (
-                        <>
-                            {playingId === `prog-${selectedId}` ? (
-                                <button className="win7-toolbar-btn" onClick={handleStop}>
-                                    <span style={{ color: '#e00', fontWeight: 'bold', fontSize: '1.2em', lineHeight: 1 }}>■</span>
-                                    <span>Stop</span>
-                                </button>
-                            ) : (
-                                <button className="win7-toolbar-btn" onClick={() => handlePlay(progs[selectedId].indices, `prog-${selectedId}`)}>
-                                    <span style={{ color: '#4a7', fontWeight: 'bold', fontSize: '1.2em', lineHeight: 1 }}>▶</span>
-                                    <span>Play</span>
-                                </button>
-                            )}
-                            <button className="win7-toolbar-btn" onClick={() => handleDownload(`progression-${selectedId}`, progs[selectedId].indices, 'pop')}>
-                                <span style={{ fontSize: '1.1em' }}>💾</span>
-                                <span>Save MIDI</span>
-                            </button>
-                        </>
-                    ) : (
-                        <div style={{ padding: '4px 8px', color: '#888', fontStyle: 'italic', fontSize: '0.9em' }}>
-                            Select a progression...
-                        </div>
-                    )}
-                </div>
+    // New Aero Icons
+    const Icons = {
+        Play: <span style={{ textShadow: '0 0 5px rgba(255,255,255,0.8)' }}>▶</span>,
+        Stop: <span style={{ textShadow: '0 0 5px rgba(255,0,0,0.5)' }}>■</span>,
+        Music: <span style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.2))' }}>🎵</span>
+    };
 
-                {/* Visual Options in Toolbar */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '10px', borderLeft: '1px solid #ccc', paddingLeft: '10px' }}>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Add 7th intervals to basic triads">
-                        <input type="checkbox" checked={isExtension} onChange={e => setIsExtension(e.target.checked)} />
-                        <span>Add 7ths</span>
-                    </label>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Use smoother voice leading">
-                        <input type="checkbox" checked={isVoicing} onChange={e => setIsVoicing(e.target.checked)} />
-                        <span>Smooth Voicing</span>
-                    </label>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Play pattern twice">
-                        <input type="checkbox" checked={isVariation} onChange={e => setIsVariation(e.target.checked)} />
-                        <span>Loop 2x</span>
-                    </label>
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent' }}>
+
+            {/* Aero Toolbar */}
+            <div className="aero-toolbar">
+                <div className="aero-toolbar-group">
+                    <button className="aero-toolbar-btn" onClick={() => selectedId !== null && handlePlay(matchProgressions[selectedId].indices, `prog-${selectedId}`)} disabled={selectedId === null}>
+                        <span style={{ color: '#00cc00', fontSize: '1.2em' }}>{Icons.Play}</span>
+                        <span>Play</span>
+                    </button>
+                    <button className="aero-toolbar-btn" onClick={handleStop}>
+                        <span style={{ color: '#cc0000', fontSize: '1.2em' }}>{Icons.Stop}</span>
+                        <span>Stop</span>
+                    </button>
+                </div>
+                <div className="aero-toolbar-separator"></div>
+                <div className="aero-toolbar-group">
+                    <button className="aero-toolbar-btn" disabled>
+                        <span style={{ fontSize: '1.2em' }}>💾</span>
+                        <span>Save</span>
+                    </button>
+                    <button className="aero-toolbar-btn" disabled>
+                        <span style={{ fontSize: '1.2em' }}>📤</span>
+                        <span>Export</span>
+                    </button>
                 </div>
             </div>
 
-            {/* Address Bar-ish Header (Optional, maybe skip for simplicity inside window) */}
+            {/* Aero List Header */}
+            <div className="aero-list-header">
+                <div style={{ flex: 1, paddingLeft: '10px' }}>Name</div>
+                <div style={{ width: '80px' }}>Key</div>
+                <div style={{ width: '120px' }}>Style</div>
+            </div>
 
-            {/* Explorer List View */}
-            <div className="win7-inner-content" style={{ flex: 1, overflow: 'auto', background: '#fff' }}>
-                <div className="explorer-list" style={{ width: '100%', minWidth: '400px' }}>
-                    <div className="explorer-header">
-                        <div className="col-name" style={{ width: '30%' }}>Name</div>
-                        <div className="col-type" style={{ width: '50%' }}>Chords</div>
-                        <div className="col-degree" style={{ width: '20%' }}>Genre</div>
-                    </div>
+            {/* Aero List Content */}
+            <div className="aero-list-container">
+                {matchProgressions.map((prog, idx) => {
+                    const isSelected = selectedId === idx;
+                    const isPlaying = playingId === `prog-${idx}`;
 
-                    {progs.length === 0 && (
-                        <div style={{ padding: '20px', color: '#888', textAlign: 'center' }}>No progressions found for this mode.</div>
-                    )}
-
-                    {progs.map((prog, idx) => {
-                        const sequence = generateVariationSequence(prog.indices, chords, isVariation, isExtension, isVoicing);
-                        const displayChords = sequence.map(c => c.chordName).join(' - ');
-                        const isSelected = selectedId === idx;
-                        const isPlaying = playingId === `prog-${idx}`;
-
-                        return (
-                            <div
-                                key={idx}
-                                className={`explorer-row ${isSelected ? 'selected' : ''}`}
-                                onClick={() => setSelectedId(idx)}
-                                onDoubleClick={() => handlePlay(prog.indices, `prog-${idx}`)}
-                            >
-                                <div className="col-name" style={{ width: '30%', fontWeight: isPlaying ? 'bold' : 'normal', color: isPlaying ? '#003399' : 'inherit' }}>
-                                    {isPlaying && '▶ '}
-                                    {prog.name}
-                                </div>
-                                <div className="col-type" style={{ width: '50%' }}>{displayChords}</div>
-                                <div className="col-degree" style={{ width: '20%' }}>{prog.genre || 'Pop'}</div>
+                    return (
+                        <div
+                            key={idx}
+                            className={`aero-list-row ${isSelected ? 'selected' : ''}`}
+                            onClick={() => setSelectedId(idx)}
+                            onDoubleClick={() => handlePlay(prog.indices, `prog-${idx}`)}
+                        >
+                            <div className="aero-list-icon">
+                                {isPlaying ? <span className="pulse-anim">🔊</span> : Icons.Music}
                             </div>
-                        );
-                    })}
-                </div>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                <div style={{ fontWeight: '600', color: '#003366' }}>{prog.name}</div>
+                                <div style={{ fontSize: '0.8em', color: '#555' }}>
+                                    {prog.indices.map(i => chords.find(c => c.degree === i)?.roman).join(' - ')}
+                                </div>
+                            </div>
+                            <div style={{ width: '80px', display: 'flex', alignItems: 'center', color: '#005580' }}>
+                                {root} {mode}
+                            </div>
+                            <div style={{ width: '120px', display: 'flex', alignItems: 'center', color: '#666', fontStyle: 'italic', fontSize: '0.9em' }}>
+                                {prog.genre || 'Pop'}
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Status Bar */}
-            <div className="win7-status-bar">
-                <div>{progs.length} items</div>
-                <div>{selectedId !== null ? '1 item selected' : ''}</div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    {/* Controls moved to top */}
-                </div>
+            <div className="aero-status-bar">
+                {matchProgressions.length} items  |  {selectedId !== null ? '1 item selected' : ''}
             </div>
         </div>
     );

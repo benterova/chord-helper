@@ -14,6 +14,7 @@ export interface Size {
 export interface WindowState {
     id: string;
     title: string;
+    icon?: string; // Path to icon image
     component: ReactNode;
     isOpen: boolean;
     isMinimized: boolean;
@@ -26,7 +27,7 @@ export interface WindowState {
 interface WindowManagerContextType {
     windows: WindowState[];
     activeWindowId: string | null;
-    openWindow: (id: string, title: string, component: ReactNode, initialSize?: Size, initialPos?: Position) => void;
+    openWindow: (id: string, title: string, component: ReactNode, initialSize?: Size, initialPos?: Position, icon?: string) => void;
     focusWindow: (id: string) => void;
     resetLayout: () => void;
     resizeSplit: (x: number, y: number) => void;
@@ -145,7 +146,6 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
 
 
     const focusWindow = useCallback((id: string) => {
-        // ... existing implementation ...
         setActiveWindowId(id);
         setWindows(prev => prev.map(w => {
             if (w.id === id) {
@@ -156,8 +156,7 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
         setNextZIndex(prev => prev + 1);
     }, [nextZIndex]);
 
-    const openWindow = useCallback((id: string, title: string, component: ReactNode, initialSize: Size = { width: 400, height: 300 }, initialPos?: Position) => {
-        // ... existing implementation ...
+    const openWindow = useCallback((id: string, title: string, component: ReactNode, initialSize: Size = { width: 400, height: 300 }, initialPos?: Position, icon?: string) => {
         setWindows(prev => {
             const existing = prev.find(w => w.id === id);
             if (existing) {
@@ -170,6 +169,7 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
             return [...prev, {
                 id,
                 title,
+                icon,
                 component,
                 isOpen: true,
                 isMinimized: false,

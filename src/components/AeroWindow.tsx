@@ -32,7 +32,15 @@ export const AeroWindow: React.FC<AeroWindowProps> = ({ id }) => {
             onMouseDown={() => focusWindow(id)}
         >
             <div className="win7-titlebar" style={{ cursor: 'default' }}>
-                <div className="win7-icon"></div>
+                <div className="win7-icon">
+                    {windowState.icon && (
+                        <img
+                            src={windowState.icon}
+                            alt=""
+                            style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.7))' }}
+                        />
+                    )}
+                </div>
                 <div className="win7-title-text">{windowState.title}</div>
             </div>
 

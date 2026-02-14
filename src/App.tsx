@@ -10,10 +10,18 @@ import { GlobalSettings } from './components/GlobalSettings';
 import { Header } from './components/Header';
 import './index.css';
 
+import frutigerBg from './assets/frutiger_bg.png';
+
 const DesktopInitializer: React.FC = () => {
   const { openWindow } = useWindowManager();
 
   useEffect(() => {
+    // Force background image via JS to ensure correct path resolution
+    document.body.style.backgroundImage = `url(${frutigerBg})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center bottom';
+    document.body.style.backgroundAttachment = 'fixed';
+
     // Calculate centered layout
     const screenW = window.innerWidth;
     // const screenH = window.innerHeight; // Unused
@@ -39,25 +47,29 @@ const DesktopInitializer: React.FC = () => {
     // Circle (Top Left)
     openWindow('circle', 'Circle of Fifths', <CircleOfFifths />,
       { width: sizes.circle.w, height: sizes.circle.h },
-      { x: startX, y: startY }
+      { x: startX, y: startY },
+      '/icon_circle.png'
     );
 
     // Scale Details (Top Right) - Touching Circle
     openWindow('details', 'Scale Details', <ScaleDetails />,
       { width: sizes.details.w, height: sizes.details.h },
-      { x: startX + sizes.circle.w, y: startY }
+      { x: startX + sizes.circle.w, y: startY },
+      '/icon_scale.png'
     );
 
     // Progression List (Bottom Left) - Touching Circle
     openWindow('progressions', 'Progression Explorer', <ProgressionList />,
       { width: sizes.progs.w, height: sizes.progs.h },
-      { x: startX, y: startY + sizes.circle.h }
+      { x: startX, y: startY + sizes.circle.h },
+      '/icon_progression.png'
     );
 
     // Generator (Bottom Right) - Touching Progs & Details
     openWindow('generator', 'MIDI Generator', <Generator />,
       { width: sizes.gen.w, height: sizes.gen.h },
-      { x: startX + sizes.progs.w, y: startY + sizes.details.h } // Align based on column/row
+      { x: startX + sizes.progs.w, y: startY + sizes.details.h }, // Align based on column/row
+      '/icon_generator.png'
     );
 
   }, []); // Run once on mount
@@ -65,24 +77,10 @@ const DesktopInitializer: React.FC = () => {
   return (
     <Desktop>
       {/* Top Bar / Taskbar Area */}
-      <div className="aero-taskbar" style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 1rem',
-        height: '60px',
-        background: 'linear-gradient(to bottom, #2b3c5a 0%, #1e2b40 100%)', // Darker, more professional blue
-        borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-        justifyContent: 'space-between',
-        zIndex: 1000
-      }}>
+      <div className="aero-taskbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <Header />
-          <div style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.2)' }}></div>
+          <div className="taskbar-divider"></div>
           <GlobalSettings />
         </div>
       </div>

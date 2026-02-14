@@ -8,22 +8,22 @@ import { useMusicTheory } from '../lib/MusicTheoryContext';
 export const CircleOfFifths: React.FC = () => {
     const { root, chords } = useMusicTheory();
 
-    // Color Palette based on Chord Quality
+    // Frutiger Aero Palette - Vibrant & Glossy
     const QUALITY_COLORS: Record<string, string> = {
-        'major': '#4db8ff', // Bright Blue
-        'minor': '#ff6b6b', // Soft Red
-        'dim': '#51cf66',   // Green
-        'aug': '#cc5de8',   // Purple
-        'unknown': '#adb5bd' // Gray
+        'major': 'url(#grad-major)', // Cyan/Blue
+        'minor': 'url(#grad-minor)', // Pink/Magenta
+        'dim': 'url(#grad-dim)',   // Bright Green
+        'aug': 'url(#grad-aug)',   // Purple
+        'unknown': '#ccc'
     };
 
-    const INACTIVE_COLOR = '#e9ecef'; // Light Gray for non-key notes
+    const INACTIVE_COLOR = 'url(#grad-inactive)';
 
     const size = 500;
     const center = size / 2;
-    const radius = 140; // Smaller radius to fit leader lines
+    const radius = 140;
     const angleStep = 360 / 12;
-    const depth = 20;
+    const depth = 15; // Slightly reduced depth for clearer glass look
 
     const [hoveredChord, setHoveredChord] = useState<Chord | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -60,8 +60,6 @@ export const CircleOfFifths: React.FC = () => {
         const x2 = cx + r * Math.cos(endRad);
         const y2 = cy + r * Math.sin(endRad);
 
-        // Only draw side if it's "front facing" roughly
-        // Simplified: Draw outer arc wall
         return `M ${x1} ${y1} L ${x1} ${y1 + depth} A ${r} ${r} 0 0 1 ${x2} ${y2 + depth} L ${x2} ${y2} A ${r} ${r} 0 0 0 ${x1} ${y1} Z`;
     };
 
@@ -72,12 +70,43 @@ export const CircleOfFifths: React.FC = () => {
     };
 
     return (
-        <div ref={containerRef} onMouseMove={handleMouseMove} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff', fontFamily: 'Calibri, sans-serif', position: 'relative', overflow: 'hidden' }}>
+        <div ref={containerRef} onMouseMove={handleMouseMove} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', fontFamily: '"Segoe UI", sans-serif', position: 'relative', overflow: 'hidden' }}>
 
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
                 {/* Chart Area */}
-                <div style={{ flex: 1, position: 'relative', minHeight: '0' }}>
-                    <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.2))' }}>
+                <div style={{ flex: 1, position: 'relative', minHeight: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 10px 15px rgba(0,160,255,0.2))' }}>
+                        <defs>
+                            {/* Frutiger Aero Gradients */}
+                            <linearGradient id="grad-major" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#4facfe" />
+                                <stop offset="100%" stopColor="#00f2fe" />
+                            </linearGradient>
+                            <linearGradient id="grad-minor" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#fa709a" />
+                                <stop offset="100%" stopColor="#fee140" />
+                            </linearGradient>
+                            <linearGradient id="grad-dim" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#43e97b" />
+                                <stop offset="100%" stopColor="#38f9d7" />
+                            </linearGradient>
+                            <linearGradient id="grad-aug" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#a18cd1" />
+                                <stop offset="100%" stopColor="#fbc2eb" />
+                            </linearGradient>
+                            <linearGradient id="grad-inactive" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#e0e0e0" />
+                                <stop offset="100%" stopColor="#ffffff" />
+                            </linearGradient>
+
+                            {/* Glass Shine Overlay */}
+                            <linearGradient id="glass-shine" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
+                                <stop offset="40%" stopColor="rgba(255,255,255,0)" />
+                                <stop offset="100%" stopColor="rgba(255,255,255,0.1)" />
+                            </linearGradient>
+                        </defs>
+
                         <g transform={`translate(${center}, ${center}) rotate(-90)`}> {/* Rotate so C is top */}
                             {/* Render Slices */}
                             {CIRCLE_OF_FIFTHS.map((note, index) => {
@@ -86,26 +115,20 @@ export const CircleOfFifths: React.FC = () => {
                                 const isActive = root === note;
 
                                 // Pull out logic: Only on hover
-                                const pullOut = isHovered ? 20 : 0;
+                                const pullOut = isHovered ? 25 : (isActive ? 10 : 0);
                                 const midAngle = (index * angleStep);
                                 const rad = midAngle * Math.PI / 180;
                                 const tx = pullOut * Math.cos(rad);
                                 const ty = pullOut * Math.sin(rad);
 
-                                const startAngle = (index * angleStep) - (angleStep / 2);
-                                const endAngle = startAngle + angleStep;
+                                const startAngle = (index * angleStep) - (angleStep / 2) + 1; // Gap
+                                const endAngle = startAngle + angleStep - 2; // Gap
 
                                 // Determine Color
-                                let color = INACTIVE_COLOR;
+                                let fill = INACTIVE_COLOR;
                                 if (chordData) {
-                                    color = QUALITY_COLORS[chordData.quality] || QUALITY_COLORS['unknown'];
-                                    // If this is the tonic (I), make it deeper/darker
-                                    if (isActive) {
-                                        color = adjustColor(color, -40); // Darken significantly to distinguish without raising
-                                    }
+                                    fill = QUALITY_COLORS[chordData.quality] || QUALITY_COLORS['unknown'];
                                 }
-
-                                const darkColor = adjustColor(color, -40); // Darker side
 
                                 return (
                                     <g key={note}
@@ -113,127 +136,165 @@ export const CircleOfFifths: React.FC = () => {
                                         onMouseEnter={() => chordData && setHoveredChord(chordData)}
                                         onMouseLeave={() => setHoveredChord(null)}
                                         onClick={() => handleChordClick(chordData)}
-                                        style={{ cursor: chordData ? 'pointer' : 'default', transition: 'transform 0.2s ease-out' }}
+                                        style={{ cursor: chordData ? 'pointer' : 'default', transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
                                     >
                                         {/* 3D Side (Depth) */}
                                         <path
                                             d={createSidePath(0, 0, radius, startAngle, endAngle, depth)}
-                                            fill={darkColor}
+                                            fill="rgba(0,0,0,0.15)"
                                             stroke="none"
                                         />
+                                        {/* Main Face */}
                                         <path
                                             d={createSectorPath(0, 0, radius, startAngle, endAngle)}
-                                            fill={color}
-                                            stroke="#fff"
-                                            strokeWidth="1"
+                                            fill={fill}
+                                            fillOpacity={isActive || isHovered || chordData ? 0.9 : 0.3}
+                                            stroke="rgba(255,255,255,0.8)"
+                                            strokeWidth="2"
                                         />
+                                        {/* Glass Shine */}
+                                        <path
+                                            d={createSectorPath(0, 0, radius, startAngle, endAngle)}
+                                            fill="url(#glass-shine)"
+                                            pointerEvents="none"
+                                        />
+
+                                        {isActive && (
+                                            <circle cx={(radius - 20) * Math.cos(rad)} cy={(radius - 20) * Math.sin(rad)} r="4" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
+                                        )}
                                     </g>
                                 );
                             })}
                         </g>
 
-                        {/* Leader Lines & Labels layer (Separate Group to be on top) */}
+                        {/* Leader Lines & Labels layer */}
                         <g transform={`translate(${center}, ${center})`}>
                             {CIRCLE_OF_FIFTHS.map((note, index) => {
                                 const chordData = chords.find(c => c.root === note);
+                                const isActive = root === note;
 
-                                // We need to match the rotation above
-                                const angle = (index * angleStep) - 90; // Adjust for top-start
+                                const angle = (index * angleStep) - 90;
                                 const rad = angle * Math.PI / 180;
 
-                                const rLabel = radius + 30;
+                                const rLabel = radius + 45;
                                 const x = rLabel * Math.cos(rad);
                                 const y = rLabel * Math.sin(rad);
 
-                                const rAnchor = radius - 20;
+                                const rAnchor = radius + 5;
                                 const ax = rAnchor * Math.cos(rad);
                                 const ay = rAnchor * Math.sin(rad);
 
-                                const labelText = chordData ? `${note} (${chordData.roman})` : note;
-                                const labelColor = chordData ? '#333' : '#aaa';
-                                const fontWeight = chordData ? 'bold' : 'normal';
+                                const labelText = chordData ? `${note}` : note;
+                                const subText = chordData ? `(${chordData.roman})` : '';
+
+                                const labelColor = isActive ? '#00aeff' : (chordData ? '#004466' : 'rgba(0,68,102,0.3)');
+                                const fontWeight = isActive ? '800' : (chordData ? '600' : '400');
+                                const fontSize = isActive ? '20' : '16';
 
                                 return (
-                                    <g key={`label-${note}`}>
-                                        <polyline
-                                            points={`${ax},${ay} ${x},${y}`}
-                                            fill="none"
-                                            stroke={chordData ? "#666" : "#ddd"}
-                                            strokeWidth="1"
-                                        />
+                                    <g key={`label-${note}`} style={{ transition: 'all 0.3s ease' }}>
+                                        {chordData && (
+                                            <polyline
+                                                points={`${ax},${ay} ${x * 0.85},${y * 0.85}`}
+                                                fill="none"
+                                                stroke={isActive ? "#00aeff" : "rgba(0,174,255,0.3)"}
+                                                strokeWidth={isActive ? "2" : "1"}
+                                            />
+                                        )}
                                         <text
-                                            x={x + (x > 0 ? 5 : -5)}
+                                            x={x}
                                             y={y}
-                                            textAnchor={x > 0 ? "start" : "end"}
+                                            textAnchor="middle"
                                             dominantBaseline="middle"
-                                            fontSize="14"
+                                            fontSize={fontSize}
                                             fontWeight={fontWeight}
                                             fill={labelColor}
+                                            style={{ textShadow: isActive ? '0 0 10px rgba(255,255,255,0.8)' : 'none' }}
                                         >
                                             {labelText}
+                                            <tspan x={x} dy="16" fontSize="11" fill={isActive ? '#00aeff' : '#666'} fontWeight="normal">{subText}</tspan>
                                         </text>
                                     </g>
                                 );
                             })}
                         </g>
+
+                        {/* Central Hub Bubble */}
+                        <g transform={`translate(${center}, ${center})`}>
+                            <circle r="40" fill="url(#grad-major)" opacity="0.1" />
+                            <circle r="35" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1" />
+                            <text y="-5" textAnchor="middle" fontSize="10" fill="#0077aa" fontWeight="bold" letterSpacing="1">KEY</text>
+                            <text y="12" textAnchor="middle" fontSize="16" fill="#004466" fontWeight="bold">{root}</text>
+                        </g>
                     </svg>
                 </div>
 
-                {/* Legend at Bottom */}
-                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid #ccc', background: '#f9f9f9', marginTop: 'auto' }}>
-                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px', fontWeight: 'bold' }}>Chord Qualities</div>
+                {/* Legend at Bottom - Transparent Glass */}
+                <div style={{
+                    padding: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    background: 'linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.6))',
+                    borderTop: '1px solid rgba(255,255,255,0.5)',
+                    marginTop: 'auto'
+                }}>
+                    <div style={{ fontSize: '11px', color: '#005580', marginBottom: '6px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Chord Qualities</div>
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                        {Object.entries(QUALITY_COLORS).filter(([key]) => key !== 'unknown').map(([quality, color]) => (
-                            <div key={quality} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <div style={{ width: '12px', height: '12px', background: color, border: '1px solid rgba(0,0,0,0.2)', borderRadius: '2px' }}></div>
-                                <div style={{ fontSize: '12px', color: '#333', textTransform: 'capitalize' }}>
-                                    {quality === 'dim' ? 'Diminished' : quality === 'aug' ? 'Augmented' : quality}
-                                </div>
-                            </div>
-                        ))}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ width: '12px', height: '12px', background: 'linear-gradient(135deg, #4facfe, #00f2fe)', borderRadius: '50%', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}></div>
+                            <span style={{ fontSize: '11px', color: '#004466' }}>Major</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ width: '12px', height: '12px', background: 'linear-gradient(135deg, #fa709a, #fee140)', borderRadius: '50%', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}></div>
+                            <span style={{ fontSize: '11px', color: '#004466' }}>Minor</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ width: '12px', height: '12px', background: 'linear-gradient(135deg, #43e97b, #38f9d7)', borderRadius: '50%', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}></div>
+                            <span style={{ fontSize: '11px', color: '#004466' }}>Dim</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Sticky Note Tooltip */}
+            {/* Sticky Note Tooltip - Now Aero Glass Popover */}
             {hoveredChord && (
                 <div style={{
                     position: 'absolute',
-                    left: Math.min(mousePos.x + 15, containerRef.current ? containerRef.current.clientWidth - 160 : 0), // Prevent overflow right
-                    top: Math.min(mousePos.y + 15, containerRef.current ? containerRef.current.clientHeight - 100 : 0), // Prevent overflow bottom
-                    width: '180px', // Slightly wider for layout
-                    background: '#fef3c7', // Post-it yellow
-                    border: '1px solid #eab308',
-                    boxShadow: '2px 2px 5px rgba(0,0,0,0.2)',
-                    padding: '8px 12px',
-                    borderRadius: '2px', // Slight round
-                    transform: 'rotate(-1deg)', // Slight tilt for "sticky note" feel
-                    pointerEvents: 'none', // Don't block mouse events
+                    left: Math.min(mousePos.x + 20, containerRef.current ? containerRef.current.clientWidth - 180 : 0),
+                    top: Math.min(mousePos.y + 20, containerRef.current ? containerRef.current.clientHeight - 100 : 0),
+                    width: '180px',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.8)',
+                    boxShadow: '0 8px 32px rgba(0, 174, 255, 0.25)',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    pointerEvents: 'none',
                     zIndex: 100,
-                    fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', // Handwritten feel attempt
-                    color: '#4b5563',
-                    lineHeight: '1.4'
+                    fontFamily: '"Segoe UI", sans-serif',
+                    color: '#004466'
                 }}>
-                    {/* Header: Name and Roman Numeral */}
+                    {/* Header */}
                     <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'baseline',
-                        borderBottom: '1px dashed #d1d5db',
+                        borderBottom: '1px solid rgba(0, 174, 255, 0.2)',
                         paddingBottom: '4px',
                         marginBottom: '6px'
                     }}>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1f2937' }}>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#0077aa' }}>
                             {hoveredChord.chordName}
                         </div>
-                        <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#4b5563' }}>
+                        <div style={{ fontSize: '1rem', color: '#00aeff' }}>
                             {hoveredChord.roman}
                         </div>
                     </div>
 
-                    {/* Content: Notes */}
-                    <div style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#6b7280' }}>
-                        {getChordNotes(hoveredChord).join(', ')}
+                    {/* Content */}
+                    <div style={{ fontSize: '0.9rem', color: '#555' }}>
+                        {getChordNotes(hoveredChord).join(' - ')}
                     </div>
                 </div>
             )}
@@ -241,23 +302,4 @@ export const CircleOfFifths: React.FC = () => {
     );
 };
 
-// Helper for color darkening
-function adjustColor(col: string, amt: number) {
-    let usePound = false;
-    if (col[0] === "#") {
-        col = col.slice(1);
-        usePound = true;
-    }
-    let num = parseInt(col, 16);
-    let r = (num >> 16) + amt;
-    if (r > 255) r = 255;
-    else if (r < 0) r = 0;
-    let b = ((num >> 8) & 0x00FF) + amt;
-    if (b > 255) b = 255;
-    else if (b < 0) b = 0;
-    let g = (num & 0x0000FF) + amt;
-    if (g > 255) g = 255;
-    else if (g < 0) g = 0;
-    return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
-}
 
