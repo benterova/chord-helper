@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { STYLES, type Style, generateProgression, applyRhythm, type MidiEvent } from '../lib/engine';
-// import { downloadGeneratedMidi } from '../lib/midi';
+import { downloadGeneratedMidi } from '../lib/midi';
 import type { Chord } from '../lib/theory';
 import { audioEngine } from '../lib/audio';
 import useLocalStorage from '../hooks/useLocalStorage';
@@ -92,11 +92,11 @@ export const Generator: React.FC = () => {
         setSavedProgressions(savedProgressions.filter(p => p.id !== id));
     };
 
-    // const handleDownload = (progression: { events: MidiEvent[]; root: string; mode: string; style: Style; chords: Chord[] }) => {
-    //     if (!progression.events) return;
-    //     const name = progression.chords.map(c => c.chordName).join('-');
-    //     downloadGeneratedMidi(name, progression.events, progression.root, progression.mode, progression.style);
-    // };
+    const handleDownload = () => {
+        if (!generatedEvents || !generatedProgression) return;
+        const name = generatedProgression.map(c => c.chordName).join('-');
+        downloadGeneratedMidi(name, generatedEvents, root, mode, style);
+    };
 
     const handlePlay = (id: string, events: MidiEvent[]) => {
         if (playingId === id) {
@@ -300,6 +300,16 @@ export const Generator: React.FC = () => {
                     </button>
                 </div>
 
+            </div>
+
+            {/* Special "Hardware" Download Button - Top Right Corner */}
+            <div className="aero-dload-container">
+                <button className="aero-dload-btn" onClick={handleDownload} title="Download MIDI File">
+                    <div className="dload-content-wrapper">
+                        <span className="dload-icon">⬇</span>
+                        <span className="dload-text">MIDI</span>
+                    </div>
+                </button>
             </div>
 
         </div>
