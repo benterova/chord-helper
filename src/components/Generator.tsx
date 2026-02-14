@@ -5,23 +5,24 @@ import type { Chord } from '../lib/theory';
 import { audioEngine } from '../lib/audio';
 import useLocalStorage from '../hooks/useLocalStorage';
 
-interface GeneratorProps {
-    root: string;
-    mode: string;
-}
+import { useMusicTheory } from '../lib/MusicTheoryContext';
 
-interface SavedProgression {
-    id: string;
-    name: string;
-    timestamp: number;
-    chords: Chord[];
-    events: MidiEvent[];
-    root: string;
-    mode: string;
-    style: Style;
-}
+// ... imports ...
 
-export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
+export const Generator: React.FC = () => {
+    const { root, mode } = useMusicTheory();
+
+    interface SavedProgression {
+        id: string;
+        name: string;
+        timestamp: number;
+        chords: Chord[];
+        events: MidiEvent[];
+        root: string;
+        mode: string;
+        style: Style;
+    }
+
     // Core State
     const [style, setStyle] = useState<Style>(STYLES.POP);
     const [length, setLength] = useState(4);
@@ -123,155 +124,169 @@ export const Generator: React.FC<GeneratorProps> = ({ root, mode }) => {
     };
 
     return (
-        <div className="generator-container">
-            <h3>Generative Engine</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff' }}>
+            {/* Scrollable Content Area */}
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
 
-            <div className="generator-controls">
-                <label className="control-label">
-                    <span>Style</span>
-                    <select value={style} onChange={(e) => setStyle(e.target.value as Style)}>
-                        {Object.values(STYLES).map(s => {
-                            let label = styleLabels[s] || (s.charAt(0).toUpperCase() + s.slice(1));
-                            return <option key={s} value={s}>{label}</option>;
-                        })}
-                    </select>
-                </label>
-
-                <label className="control-label">
-                    <span>Length</span>
-                    <select value={length} onChange={(e) => setLength(parseInt(e.target.value, 10))}>
-                        <option value="4">4 Bars</option>
-                        <option value="8">8 Bars</option>
-                        <option value="16">16 Bars (Long)</option>
-                        <option value="32">32 Bars (Huge)</option>
-                        <option value="64">64 Bars (Epic)</option>
-                    </select>
-                </label>
-
-                <label className="checkbox-label" style={{ marginBottom: '0.5rem' }}>
-                    <input type="checkbox" checked={enableRhythm} onChange={(e) => setEnableRhythm(e.target.checked)} />
-                    <span>Enable Rhythm</span>
-                </label>
-
-                <button
-                    onClick={handleGenerate}
-                    className="midi-btn accent"
-                    style={{ marginLeft: 'auto' }}
-                >
-                    Generate New
-                </button>
-            </div>
-
-            {generatedProgression && (
-                <div style={{ marginBottom: '15px', padding: '1rem', background: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ fontSize: '1.1em', fontWeight: 'bold', marginBottom: '5px' }}>
-                        {generatedProgression.map(c => c.chordName).join(' - ')}
-                    </div>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>
-                        {generatedProgression.map(c => c.roman).join(' - ')}
+                {/* Top LCD Display Area */}
+                <div style={{ padding: '15px', flexShrink: 0 }}>
+                    <div className="lcd-display" style={{ minHeight: '80px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+                        {generatedProgression ? (
+                            <>
+                                <div style={{ fontSize: '1.2em', fontWeight: 'bold' }}>
+                                    {generatedProgression.map(c => c.chordName).join(' - ')}
+                                </div>
+                                <div style={{ fontSize: '0.9em', opacity: 0.7, marginTop: '5px' }}>
+                                    {generatedProgression.map(c => c.roman).join(' - ')}
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ opacity: 0.5 }}>Waiting for input...</div>
+                        )}
                     </div>
                 </div>
-            )}
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
-                <button
-                    onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
-                    disabled={!generatedEvents}
-                    className="midi-btn"
-                    style={playingId === 'generator' ? { background: '#ef233c', color: 'white' } : {}}
-                >
-                    {playingId === 'generator' ? '⏹ Stop' : '▶ Play'}
-                </button>
-                <button
-                    onClick={handleSave}
-                    disabled={!generatedProgression}
-                    className="midi-btn"
-                    title="Save to list"
-                >
-                    💾 Save
-                </button>
-                <button
-                    onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
-                    disabled={!generatedProgression}
-                    className="midi-btn primary"
-                    style={{ width: '100%', backgroundColor: generatedProgression ? 'var(--primary-color, #3a86ff)' : undefined }}
-                >
-                    Download MIDI
-                </button>
-            </div>
+                {/* WMP Control Interface */}
+                <div className="wmp-controls" style={{ flexShrink: 0 }}>
+                    <button
+                        className="wmp-btn-round"
+                        title="Generate New"
+                        onClick={handleGenerate}
+                    >
+                        ↻
+                    </button>
 
-            {/* Saved Progressions Accordion */}
-            <div className="saved-progressions">
-                <button
-                    className="accordion-header"
-                    onClick={() => setIsSavedOpen(!isSavedOpen)}
-                    style={{
-                        width: '100%',
-                        padding: '1rem',
-                        background: 'var(--surface-color)',
-                        color: 'var(--text-primary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        fontSize: '1rem'
-                    }}
-                >
-                    <span>Saved Progressions ({savedProgressions.length})</span>
-                    <span>{isSavedOpen ? '▼' : '▶'}</span>
-                </button>
+                    <button
+                        className="wmp-btn-round large"
+                        title={playingId === 'generator' ? "Stop" : "Play"}
+                        onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
+                        disabled={!generatedEvents}
+                        style={{ color: playingId === 'generator' ? '#d00' : '#1e5799' }}
+                    >
+                        {playingId === 'generator' ? '■' : '▶'}
+                    </button>
 
-                {isSavedOpen && (
-                    <div className="saved-list" style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {savedProgressions.length === 0 && <div style={{ padding: '1rem', textAlign: 'center', opacity: 0.6 }}>No saved progressions yet.</div>}
+                    <button
+                        className="wmp-btn-round"
+                        title="Save"
+                        onClick={handleSave}
+                        disabled={!generatedProgression}
+                    >
+                        💾
+                    </button>
+                    <button
+                        className="wmp-btn-round"
+                        title="Download MIDI"
+                        onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
+                        disabled={!generatedProgression}
+                    >
+                        ⬇
+                    </button>
+                </div>
 
-                        {savedProgressions.map(prog => (
-                            <div key={prog.id} className="saved-item" style={{
-                                padding: '1rem',
-                                background: 'rgba(255,255,255,0.05)',
-                                borderRadius: '6px',
-                                border: '1px solid var(--border-color)'
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                    <div style={{ fontWeight: 600 }}>{prog.name}</div>
-                                    <div style={{ fontSize: '0.8em', opacity: 0.6 }}>{new Date(prog.timestamp).toLocaleDateString()}</div>
-                                </div>
+                {/* Configuration Panel */}
+                <div style={{ padding: '15px', background: '#f9f9f9', borderBottom: '1px solid #d9d9d9', flexShrink: 0 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.9rem' }}>
+                            <span style={{ marginBottom: '4px', color: '#555' }}>Style</span>
+                            <select
+                                value={style}
+                                onChange={(e) => setStyle(e.target.value as Style)}
+                                style={{ padding: '4px', border: '1px solid #ccc', borderRadius: '3px' }}
+                            >
+                                {Object.values(STYLES).map(s => {
+                                    let label = styleLabels[s] || (s.charAt(0).toUpperCase() + s.slice(1));
+                                    return <option key={s} value={s}>{label}</option>;
+                                })}
+                            </select>
+                        </label>
 
-                                <div style={{ fontSize: '0.9em', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-                                    {prog.chords.map(c => c.chordName).join(' - ')}
-                                </div>
-
-                                <div className="saved-actions" style={{ display: 'flex', gap: '8px' }}>
-                                    <button
-                                        onClick={() => handlePlay(prog.id, prog.events)}
-                                        className="midi-btn small"
-                                        style={playingId === prog.id ? { background: '#ef233c', color: 'white', fontSize: '0.8rem', padding: '4px 8px' } : { fontSize: '0.8rem', padding: '4px 8px' }}
-                                    >
-                                        {playingId === prog.id ? '⏹' : '▶'}
-                                    </button>
-                                    <button
-                                        onClick={() => handleDownload(prog)}
-                                        className="midi-btn small"
-                                        style={{ fontSize: '0.8rem', padding: '4px 8px' }}
-                                    >
-                                        ⬇ MIDI
-                                    </button>
-                                    <button
-                                        onClick={(e) => handleDelete(prog.id, e)}
-                                        className="midi-btn small"
-                                        style={{ fontSize: '0.8rem', padding: '4px 8px', marginLeft: 'auto', background: 'transparent', color: '#ff4d4d', border: '1px solid #ff4d4d' }}
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                        <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.9rem' }}>
+                            <span style={{ marginBottom: '4px', color: '#555' }}>Length</span>
+                            <select
+                                value={length}
+                                onChange={(e) => setLength(parseInt(e.target.value, 10))}
+                                style={{ padding: '4px', border: '1px solid #ccc', borderRadius: '3px' }}
+                            >
+                                <option value="4">4 Bars</option>
+                                <option value="8">8 Bars</option>
+                                <option value="16">16 Bars</option>
+                            </select>
+                        </label>
                     </div>
-                )}
+                    <div style={{ marginTop: '10px' }}>
+                        <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center' }}>
+                            <input type="checkbox" checked={enableRhythm} onChange={(e) => setEnableRhythm(e.target.checked)} style={{ marginRight: '6px' }} />
+                            Enable Rhythm Pattern
+                        </label>
+                    </div>
+                </div>
+
+                {/* Saved List (Collapsible) */}
+                <div style={{ flex: '1 0 auto', padding: '0' }}>
+                    <button
+                        onClick={() => setIsSavedOpen(!isSavedOpen)}
+                        style={{
+                            width: '100%',
+                            padding: '8px 15px',
+                            background: '#fcfcfc',
+                            border: 'none',
+                            borderBottom: '1px solid #e0e0e0',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            color: '#333',
+                            fontWeight: 600,
+                            fontSize: '0.9rem'
+                        }}
+                    >
+                        {isSavedOpen ? '▼' : '▶'} Saved Items ({savedProgressions.length})
+                    </button>
+
+                    {isSavedOpen && (
+                        <div style={{ background: '#fff' }}>
+                            {savedProgressions.map(prog => (
+                                <div
+                                    key={prog.id}
+                                    style={{
+                                        padding: '8px 15px',
+                                        borderBottom: '1px solid #f0f0f0',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        fontSize: '0.9rem'
+                                    }}
+                                >
+                                    <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', marginRight: '10px' }}>
+                                        <div style={{ fontWeight: 600, color: '#333' }}>{prog.name}</div>
+                                        <div style={{ fontSize: '0.85em', color: '#777' }}>
+                                            {prog.chords.map(c => c.chordName).join('-')}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                        <button
+                                            onClick={() => handlePlay(prog.id, prog.events)}
+                                            style={{ border: '1px solid #ccc', background: '#f5f5f5', borderRadius: '3px', cursor: 'pointer', padding: '2px 6px' }}
+                                        >
+                                            {playingId === prog.id ? '■' : '▶'}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDownload(prog)}
+                                            style={{ border: '1px solid #ccc', background: '#f5f5f5', borderRadius: '3px', cursor: 'pointer', padding: '2px 6px' }}
+                                        >
+                                            ⬇
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleDelete(prog.id, e)}
+                                            style={{ border: '1px solid #ccc', background: '#fff0f0', color: '#d00', borderRadius: '3px', cursor: 'pointer', padding: '2px 6px' }}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

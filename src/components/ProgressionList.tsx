@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import { audioEngine } from '../lib/audio';
-import { type Chord, generateVariationSequence } from '../lib/theory';
-import { PROGRESSIONS, type ScaleName } from '../lib/constants';
+import { generateVariationSequence } from '../lib/theory';
+import { PROGRESSIONS } from '../lib/constants';
 import { downloadProgressionMidi } from '../lib/midi';
+import { useMusicTheory } from '../lib/MusicTheoryContext';
 
-interface ProgressionListProps {
-    root: string;
-    mode: ScaleName;
-    chords: Chord[];
-}
-
-export const ProgressionList: React.FC<ProgressionListProps> = ({ root, mode, chords }) => {
+export const ProgressionList: React.FC = () => {
+    const { root, mode, chords } = useMusicTheory();
     const [isExtension, setIsExtension] = useState(false);
-    const [isVoicing, setIsVoicing] = useState(false); // Smart Voicing
-    const [isVariation, setIsVariation] = useState(false); // 2-Bar Loop
+    const [isVoicing, setIsVoicing] = useState(false);
+    const [isVariation, setIsVariation] = useState(false);
     const [playingId, setPlayingId] = useState<string | null>(null);
+    const [selectedId, setSelectedId] = useState<number | null>(null);
 
     React.useEffect(() => {
         return audioEngine.subscribe(id => setPlayingId(id));
@@ -41,90 +38,113 @@ export const ProgressionList: React.FC<ProgressionListProps> = ({ root, mode, ch
         const BPM = 120;
         const secondsPerBeat = 60 / BPM;
 
-        // Map sequence to audio engine format
         const audioSequence = sequence.map(chord => ({
             notes: chord.midiNotes,
-            duration: 4 * secondsPerBeat // 1 bar
+            duration: 4 * secondsPerBeat
         }));
 
         audioEngine.playProgression(audioSequence, id);
     };
 
-    if (progs.length === 0) {
-        return <div className="no-progs">No example progressions for this mode yet.</div>;
-    }
+    const handleStop = () => {
+        audioEngine.stop();
+    };
 
     return (
-        <section className="progressions-section">
-            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2>Example Progressions</h2>
-                <div className="toggles" style={{ display: 'flex', gap: '15px' }}>
-                    <label className="toggle-switch checkbox-label">
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* Windows 7 Toolbar */}
+            <div className="win7-toolbar" style={{ justifyContent: 'space-between', paddingRight: '10px' }}>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                    {selectedId !== null ? (
+                        <>
+                            {playingId === `prog-${selectedId}` ? (
+                                <button className="win7-toolbar-btn" onClick={handleStop}>
+                                    <span style={{ color: '#e00', fontWeight: 'bold', fontSize: '1.2em', lineHeight: 1 }}>■</span>
+                                    <span>Stop</span>
+                                </button>
+                            ) : (
+                                <button className="win7-toolbar-btn" onClick={() => handlePlay(progs[selectedId].indices, `prog-${selectedId}`)}>
+                                    <span style={{ color: '#4a7', fontWeight: 'bold', fontSize: '1.2em', lineHeight: 1 }}>▶</span>
+                                    <span>Play</span>
+                                </button>
+                            )}
+                            <button className="win7-toolbar-btn" onClick={() => handleDownload(`progression-${selectedId}`, progs[selectedId].indices, 'pop')}>
+                                <span style={{ fontSize: '1.1em' }}>💾</span>
+                                <span>Save MIDI</span>
+                            </button>
+                        </>
+                    ) : (
+                        <div style={{ padding: '4px 8px', color: '#888', fontStyle: 'italic', fontSize: '0.9em' }}>
+                            Select a progression...
+                        </div>
+                    )}
+                </div>
+
+                {/* Visual Options in Toolbar */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '10px', borderLeft: '1px solid #ccc', paddingLeft: '10px' }}>
+                    <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Add 7th intervals to basic triads">
                         <input type="checkbox" checked={isExtension} onChange={e => setIsExtension(e.target.checked)} />
-                        <span>Add 7th/9th</span>
+                        <span>Add 7ths</span>
                     </label>
-                    <label className="toggle-switch checkbox-label">
+                    <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Use smoother voice leading">
                         <input type="checkbox" checked={isVoicing} onChange={e => setIsVoicing(e.target.checked)} />
-                        <span>Smart Voicing</span>
+                        <span>Smooth Voicing</span>
                     </label>
-                    <label className="toggle-switch checkbox-label">
+                    <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Play pattern twice">
                         <input type="checkbox" checked={isVariation} onChange={e => setIsVariation(e.target.checked)} />
-                        <span>2-Bar Loop</span>
+                        <span>Loop 2x</span>
                     </label>
                 </div>
             </div>
 
-            <div className="progressions-list">
-                {progs.map((prog, idx) => {
-                    // Generate sequence for display
-                    const sequence = generateVariationSequence(prog.indices, chords, isVariation, isExtension, isVoicing);
-                    const displayChords = sequence.map(c => c.chordName);
+            {/* Address Bar-ish Header (Optional, maybe skip for simplicity inside window) */}
 
-                    let chordsDisplay: React.ReactNode;
-                    if (isVariation) {
-                        const half = Math.ceil(displayChords.length / 2);
-                        const bar1 = displayChords.slice(0, half).join(' - ');
-                        const bar2 = displayChords.slice(half).join(' - ');
-                        chordsDisplay = (
-                            <div>
-                                <div style={{ fontSize: '0.9em', opacity: 0.8 }}>Bar 1: {bar1}</div>
-                                <div style={{ fontWeight: 600 }}>Bar 2: {bar2}</div>
+            {/* Explorer List View */}
+            <div className="win7-inner-content" style={{ flex: 1, overflow: 'auto', background: '#fff' }}>
+                <div className="explorer-list" style={{ width: '100%', minWidth: '400px' }}>
+                    <div className="explorer-header">
+                        <div className="col-name" style={{ width: '30%' }}>Name</div>
+                        <div className="col-type" style={{ width: '50%' }}>Chords</div>
+                        <div className="col-degree" style={{ width: '20%' }}>Genre</div>
+                    </div>
+
+                    {progs.length === 0 && (
+                        <div style={{ padding: '20px', color: '#888', textAlign: 'center' }}>No progressions found for this mode.</div>
+                    )}
+
+                    {progs.map((prog, idx) => {
+                        const sequence = generateVariationSequence(prog.indices, chords, isVariation, isExtension, isVoicing);
+                        const displayChords = sequence.map(c => c.chordName).join(' - ');
+                        const isSelected = selectedId === idx;
+                        const isPlaying = playingId === `prog-${idx}`;
+
+                        return (
+                            <div
+                                key={idx}
+                                className={`explorer-row ${isSelected ? 'selected' : ''}`}
+                                onClick={() => setSelectedId(idx)}
+                                onDoubleClick={() => handlePlay(prog.indices, `prog-${idx}`)}
+                            >
+                                <div className="col-name" style={{ width: '30%', fontWeight: isPlaying ? 'bold' : 'normal', color: isPlaying ? '#003399' : 'inherit' }}>
+                                    {isPlaying && '▶ '}
+                                    {prog.name}
+                                </div>
+                                <div className="col-type" style={{ width: '50%' }}>{displayChords}</div>
+                                <div className="col-degree" style={{ width: '20%' }}>{prog.genre || 'Pop'}</div>
                             </div>
                         );
-                    } else {
-                        chordsDisplay = <div className="prog-chords">{displayChords.join(' - ')}</div>;
-                    }
-
-                    return (
-                        <div key={idx} className="progression-item">
-                            <div className="prog-info">
-                                <div className="prog-header" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <div className="prog-name">{prog.name}</div>
-                                    {prog.genre && (
-                                        <span className="genre-badge">{prog.genre}</span>
-                                    )}
-                                </div>
-                                {chordsDisplay}
-                            </div>
-                            <div className="prog-actions" style={{ display: 'flex', gap: '10px' }}>
-                                <button
-                                    onClick={() => handlePlay(prog.indices, `prog-${idx}`)}
-                                    className={`midi-btn ${playingId === `prog-${idx}` ? 'playing' : ''}`}
-                                    style={playingId === `prog-${idx}` ? { background: '#ef233c', color: 'white' } : {}}
-                                >
-                                    {playingId === `prog-${idx}` ? '⏹ Stop' : '▶ Play'}
-                                </button>
-                                <button
-                                    onClick={() => handleDownload(`progression-${idx + 1}`, prog.indices, 'pop')}
-                                    className="midi-btn"
-                                >
-                                    MIDI
-                                </button>
-                            </div>
-                        </div>
-                    );
-                })}
+                    })}
+                </div>
             </div>
-        </section>
+
+            {/* Status Bar */}
+            <div className="win7-status-bar">
+                <div>{progs.length} items</div>
+                <div>{selectedId !== null ? '1 item selected' : ''}</div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    {/* Controls moved to top */}
+                </div>
+            </div>
+        </div>
     );
 };

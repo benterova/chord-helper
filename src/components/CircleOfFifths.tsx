@@ -1,153 +1,249 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { audioEngine } from '../lib/audio';
-import { type Chord, getChordMidiNotes, getChordNotes } from '../lib/theory';
-import { CIRCLE_OF_FIFTHS, MODE_DISPLAY_NAMES, type ScaleName } from '../lib/constants';
+import { type Chord, getChordMidiNotes } from '../lib/theory';
+import { CIRCLE_OF_FIFTHS } from '../lib/constants';
 
-interface CircleOfFifthsProps {
-    root: string;
-    mode: string;
-    chords: Chord[];
-}
+import { useMusicTheory } from '../lib/MusicTheoryContext';
 
-export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({ root, mode, chords }) => {
+export const CircleOfFifths: React.FC = () => {
+    const { root, chords } = useMusicTheory();
+
+    // Color Palette based on Chord Quality
+    const QUALITY_COLORS: Record<string, string> = {
+        'major': '#4db8ff', // Bright Blue
+        'minor': '#ff6b6b', // Soft Red
+        'dim': '#51cf66',   // Green
+        'aug': '#cc5de8',   // Purple
+        'unknown': '#adb5bd' // Gray
+    };
+
+    const INACTIVE_COLOR = '#e9ecef'; // Light Gray for non-key notes
+
     const size = 500;
     const center = size / 2;
-    const radius = 200;
-    const thickness = 80;
+    const radius = 140; // Smaller radius to fit leader lines
     const angleStep = 360 / 12;
+    const depth = 20;
 
     const [hoveredChord, setHoveredChord] = useState<Chord | null>(null);
-    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    const createSectorPath = (cx: number, cy: number, rOuter: number, rInner: number, startAngle: number, endAngle: number) => {
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            setMousePos({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+        }
+    };
+
+    const createSectorPath = (cx: number, cy: number, r: number, startAngle: number, endAngle: number) => {
         const startRad = (startAngle * Math.PI) / 180;
         const endRad = (endAngle * Math.PI) / 180;
 
-        const x1 = cx + rOuter * Math.cos(startRad);
-        const y1 = cy + rOuter * Math.sin(startRad);
-        const x2 = cx + rOuter * Math.cos(endRad);
-        const y2 = cy + rOuter * Math.sin(endRad);
+        const x1 = cx + r * Math.cos(startRad);
+        const y1 = cy + r * Math.sin(startRad);
+        const x2 = cx + r * Math.cos(endRad);
+        const y2 = cy + r * Math.sin(endRad);
 
-        const x3 = cx + rInner * Math.cos(endRad);
-        const y3 = cy + rInner * Math.sin(endRad);
-        const x4 = cx + rInner * Math.cos(startRad);
-        const y4 = cy + rInner * Math.sin(startRad);
-
-        return `M ${x1} ${y1} A ${rOuter} ${rOuter} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 0 0 ${x4} ${y4} Z`;
+        return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
     };
 
-    const handleMouseEnter = (_event: React.MouseEvent, chord: Chord | undefined) => {
-        if (!chord) return;
-        setHoveredChord(chord);
-    };
+    const createSidePath = (cx: number, cy: number, r: number, startAngle: number, endAngle: number, depth: number) => {
+        const startRad = (startAngle * Math.PI) / 180;
+        const endRad = (endAngle * Math.PI) / 180;
 
-    const handleMouseMove = (event: React.MouseEvent) => {
-        if (!hoveredChord) return;
-        setTooltipPos({ x: event.clientX + 15, y: event.clientY + 15 });
-    };
+        const x1 = cx + r * Math.cos(startRad);
+        const y1 = cy + r * Math.sin(startRad);
+        const x2 = cx + r * Math.cos(endRad);
+        const y2 = cy + r * Math.sin(endRad);
 
-    const handleMouseLeave = () => {
-        setHoveredChord(null);
+        // Only draw side if it's "front facing" roughly
+        // Simplified: Draw outer arc wall
+        return `M ${x1} ${y1} L ${x1} ${y1 + depth} A ${r} ${r} 0 0 1 ${x2} ${y2 + depth} L ${x2} ${y2} A ${r} ${r} 0 0 0 ${x1} ${y1} Z`;
     };
 
     const handleChordClick = (chord: Chord | undefined) => {
         if (!chord) return;
         const midiNotes = getChordMidiNotes(chord);
-        audioEngine.playNotes(midiNotes, 0.5, true); // True for concurrent
+        audioEngine.playNotes(midiNotes, 0.5, true);
     };
 
     return (
-        <div style={{ position: 'relative' }}>
-            <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: 'auto', maxHeight: '500px' }}>
-                {CIRCLE_OF_FIFTHS.map((note, index) => {
-                    const startAngle = (index * angleStep) - 90 - (angleStep / 2);
-                    const endAngle = startAngle + angleStep;
+        <div ref={containerRef} onMouseMove={handleMouseMove} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff', fontFamily: 'Calibri, sans-serif', position: 'relative', overflow: 'hidden' }}>
 
-                    const chordData = chords.find(c => c.root === note);
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+                {/* Chart Area */}
+                <div style={{ flex: 1, position: 'relative', minHeight: '0' }}>
+                    <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', height: '100%', filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.2))' }}>
+                        <g transform={`translate(${center}, ${center}) rotate(-90)`}> {/* Rotate so C is top */}
+                            {/* Render Slices */}
+                            {CIRCLE_OF_FIFTHS.map((note, index) => {
+                                const chordData = chords.find(c => c.root === note);
+                                const isHovered = hoveredChord?.root === note;
+                                const isActive = root === note;
 
-                    let color = 'var(--inactive-color, #e0e0e0)';
-                    const quality = chordData?.quality;
-                    if (quality === 'major') color = 'var(--major-color, #a8dadc)';
-                    else if (quality === 'minor') color = 'var(--minor-color, #f4a261)';
-                    else if (quality === 'dim') color = 'var(--dim-color, #e76f51)';
-                    else if (quality === 'aug') color = 'var(--aug-color, #2a9d8f)';
+                                // Pull out logic
+                                const pullOut = isHovered || isActive ? 20 : 0;
+                                const midAngle = (index * angleStep);
+                                const rad = midAngle * Math.PI / 180;
+                                const tx = pullOut * Math.cos(rad);
+                                const ty = pullOut * Math.sin(rad);
 
-                    const pathd = createSectorPath(center, center, radius, radius - thickness, startAngle, endAngle);
+                                const startAngle = (index * angleStep) - (angleStep / 2);
+                                const endAngle = startAngle + angleStep;
 
-                    const midAngle = (startAngle + endAngle) / 2;
-                    const textRadius = radius - (thickness / 2);
-                    const textX = center + textRadius * Math.cos(midAngle * Math.PI / 180);
-                    const textY = center + textRadius * Math.sin(midAngle * Math.PI / 180);
+                                // Determine Color
+                                let color = INACTIVE_COLOR;
+                                if (chordData) {
+                                    color = QUALITY_COLORS[chordData.quality] || QUALITY_COLORS['unknown'];
+                                }
 
-                    return (
-                        <g key={note}
-                            onMouseEnter={(e) => handleMouseEnter(e, chordData)}
-                            onMouseMove={handleMouseMove}
-                            onMouseLeave={handleMouseLeave}
-                            onClick={() => handleChordClick(chordData)}
-                            style={{ cursor: chordData ? 'pointer' : 'default' }}
-                        >
-                            <path
-                                d={pathd}
-                                fill={color}
-                                stroke="var(--bg-color, #fff)"
-                                strokeWidth="2"
-                                className="sector"
-                            />
-                            <text
-                                x={textX}
-                                y={textY}
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                fill={chordData ? "#000" : "var(--text-secondary, #888)"}
-                                fontWeight="bold"
-                                fontSize="18"
-                                style={{ pointerEvents: 'none' }}
-                            >
-                                {note}
-                            </text>
-                            {chordData && (
-                                <text
-                                    x={textX}
-                                    y={textY + 20}
-                                    textAnchor="middle"
-                                    dominantBaseline="middle"
-                                    fill="#000"
-                                    fontSize="14"
-                                    style={{ pointerEvents: 'none' }}
-                                >
-                                    {chordData.roman}
-                                </text>
-                            )}
+                                const darkColor = adjustColor(color, -40); // Darker side
+
+                                return (
+                                    <g key={note}
+                                        transform={`translate(${tx}, ${ty})`}
+                                        onMouseEnter={() => chordData && setHoveredChord(chordData)}
+                                        onMouseLeave={() => setHoveredChord(null)}
+                                        onClick={() => handleChordClick(chordData)}
+                                        style={{ cursor: chordData ? 'pointer' : 'default', transition: 'transform 0.2s ease-out' }}
+                                    >
+                                        {/* 3D Side (Depth) */}
+                                        <path
+                                            d={createSidePath(0, 0, radius, startAngle, endAngle, depth)}
+                                            fill={darkColor}
+                                            stroke="none"
+                                        />
+                                        <path
+                                            d={createSectorPath(0, 0, radius, startAngle, endAngle)}
+                                            fill={color}
+                                            stroke="#fff"
+                                            strokeWidth="1"
+                                        />
+                                    </g>
+                                );
+                            })}
                         </g>
-                    );
-                })}
-                <text
-                    x={center}
-                    y={center}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize="24"
-                    className="center-text"
-                >
-                    {root} {MODE_DISPLAY_NAMES[mode as ScaleName] || mode.replace(/_/g, ' ')}
-                </text>
-            </svg>
 
+                        {/* Leader Lines & Labels layer (Separate Group to be on top) */}
+                        <g transform={`translate(${center}, ${center})`}>
+                            {CIRCLE_OF_FIFTHS.map((note, index) => {
+                                const chordData = chords.find(c => c.root === note);
+
+                                // We need to match the rotation above
+                                const angle = (index * angleStep) - 90; // Adjust for top-start
+                                const rad = angle * Math.PI / 180;
+
+                                const rLabel = radius + 30;
+                                const x = rLabel * Math.cos(rad);
+                                const y = rLabel * Math.sin(rad);
+
+                                const rAnchor = radius - 20;
+                                const ax = rAnchor * Math.cos(rad);
+                                const ay = rAnchor * Math.sin(rad);
+
+                                const labelText = chordData ? `${note} (${chordData.roman})` : note;
+                                const labelColor = chordData ? '#333' : '#aaa';
+                                const fontWeight = chordData ? 'bold' : 'normal';
+
+                                return (
+                                    <g key={`label-${note}`}>
+                                        <polyline
+                                            points={`${ax},${ay} ${x},${y}`}
+                                            fill="none"
+                                            stroke={chordData ? "#666" : "#ddd"}
+                                            strokeWidth="1"
+                                        />
+                                        <text
+                                            x={x + (x > 0 ? 5 : -5)}
+                                            y={y}
+                                            textAnchor={x > 0 ? "start" : "end"}
+                                            dominantBaseline="middle"
+                                            fontSize="14"
+                                            fontWeight={fontWeight}
+                                            fill={labelColor}
+                                        >
+                                            {labelText}
+                                        </text>
+                                    </g>
+                                );
+                            })}
+                        </g>
+                    </svg>
+                </div>
+
+                {/* Legend at Bottom */}
+                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', borderTop: '1px solid #ccc', background: '#f9f9f9', marginTop: 'auto' }}>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px', fontWeight: 'bold' }}>Chord Qualities</div>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        {Object.entries(QUALITY_COLORS).filter(([key]) => key !== 'unknown').map(([quality, color]) => (
+                            <div key={quality} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '12px', height: '12px', background: color, border: '1px solid rgba(0,0,0,0.2)', borderRadius: '2px' }}></div>
+                                <div style={{ fontSize: '12px', color: '#333', textTransform: 'capitalize' }}>
+                                    {quality === 'dim' ? 'Diminished' : quality === 'aug' ? 'Augmented' : quality}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Sticky Note Tooltip */}
             {hoveredChord && (
-                <div
-                    className="chord-tooltip"
-                    style={{
-                        left: tooltipPos.x,
-                        top: tooltipPos.y,
-                    }}
-                >
-                    <div className="tooltip-title">{hoveredChord.chordName}</div>
-                    <div className="tooltip-notes">
-                        {getChordNotes(hoveredChord).join(' - ')}
+                <div style={{
+                    position: 'absolute',
+                    left: Math.min(mousePos.x + 15, containerRef.current ? containerRef.current.clientWidth - 160 : 0), // Prevent overflow right
+                    top: Math.min(mousePos.y + 15, containerRef.current ? containerRef.current.clientHeight - 100 : 0), // Prevent overflow bottom
+                    width: '150px',
+                    background: '#fef3c7', // Post-it yellow
+                    border: '1px solid #eab308',
+                    boxShadow: '2px 2px 5px rgba(0,0,0,0.2)',
+                    padding: '10px',
+                    borderRadius: '2px', // Slight round
+                    transform: 'rotate(-1deg)', // Slight tilt for "sticky note" feel
+                    pointerEvents: 'none', // Don't block mouse events
+                    zIndex: 100,
+                    fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', // Handwritten feel attempt
+                    color: '#4b5563'
+                }}>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px', borderBottom: '1px dashed #d1d5db', paddingBottom: '2px' }}>
+                        {hoveredChord.chordName}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', marginBottom: '2px' }}>
+                        <strong>Roman:</strong> {hoveredChord.roman}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', marginBottom: '2px' }}>
+                        <strong>Quality:</strong> {hoveredChord.quality}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontStyle: 'italic', marginTop: '4px', color: '#6b7280' }}>
+                        Notes: {getChordMidiNotes(hoveredChord).length}
                     </div>
                 </div>
             )}
         </div>
     );
 };
+
+// Helper for color darkening
+function adjustColor(col: string, amt: number) {
+    let usePound = false;
+    if (col[0] === "#") {
+        col = col.slice(1);
+        usePound = true;
+    }
+    let num = parseInt(col, 16);
+    let r = (num >> 16) + amt;
+    if (r > 255) r = 255;
+    else if (r < 0) r = 0;
+    let b = ((num >> 8) & 0x00FF) + amt;
+    if (b > 255) b = 255;
+    else if (b < 0) b = 0;
+    let g = (num & 0x0000FF) + amt;
+    if (g > 255) g = 255;
+    else if (g < 0) g = 0;
+    return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
+}
+
