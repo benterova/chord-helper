@@ -1,0 +1,159 @@
+/* CSS Grid Layout for Desktop */
+
+.desktop-grid {
+    display: grid;
+    grid-template-columns: 600px 320px;
+    grid-template-rows: auto auto;
+    /* 600px and rest, basically */
+    gap: 20px;
+    padding: 20px;
+    padding-top: 70px;
+    /* Top bar spacing */
+
+    /* Center it horizontally if desired, or keep left aligned as before */
+    justify-content: start;
+    align-content: start;
+
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* Cell assignments */
+.grid-cell-circle {
+    grid-column: 1;
+    grid-row: 1;
+    width: 600px;
+    height: 600px;
+}
+
+.grid-cell-details {
+    grid-column: 2;
+    grid-row: 1;
+    width: 320px;
+    height: 600px;
+}
+
+.grid-cell-progs {
+    grid-column: 1;
+    grid-row: 2;
+    width: 600px;
+    height: 280px;
+    /* As per App.tsx sizes */
+}
+
+.grid-cell-generator {
+    grid-column: 2;
+    grid-row: 2;
+    /* Widget has its own fixed size */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Window "Wrapper" style - to mimic the look of AeroWindow without absolute positioning */
+.static-window {
+    /* Glass Window Frame - Restored Aero Look */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    /* Frame Padding for the "Glass Border" effect */
+    /* Top is 0 to let titlebar be flush, Sides/Bottom have framing */
+    padding: 0 6px 6px 6px;
+
+    /* Glass Background - Continuous Layered (Titlebar + Frame) */
+    background:
+        /* Top Layer: Horizon Gloss (Titlebar area) */
+        linear-gradient(to bottom,
+            rgba(245, 252, 255, 0.95) 0%,
+            rgba(235, 250, 255, 0.85) 45%,
+            rgba(225, 245, 255, 0.6) 50%,
+            rgba(240, 252, 255, 0.9) 100%) no-repeat top left / 100% 32px,
+        /* Matches titlebar height */
+
+        /* Bottom Layer: General Glass (Frame) */
+        linear-gradient(to bottom,
+            rgba(235, 250, 255, 0.9) 0%,
+            rgba(225, 245, 255, 0.8) 100%);
+
+    /* Borders & Shadows */
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+        /* Inner glass edge */
+        0 0 0 1px rgba(255, 255, 255, 0.3),
+        /* Outer faint ring */
+        0 10px 40px rgba(0, 0, 0, 0.4);
+    /* Drop shadow */
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    overflow: hidden;
+}
+
+/* Ensure win7 contents fit */
+.static-window .win7-titlebar {
+    height: 32px;
+    /* Slightly taller for the gloss effect */
+
+    /* Frutiger Aero / Windows 7 Glass Title Bar - TRANSPARENT (Handled by Parent) */
+    background: transparent;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        0 2px 5px rgba(0, 0, 0, 0.05);
+    /* Subtle drop shadow */
+
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+
+    /* Text Styling - Dark for Contrast */
+    color: #003366;
+    /* Deep Aero Blue/Navy */
+    font-size: 13px;
+    font-weight: bold;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+    /* Engraved look */
+    letter-spacing: 0.5px;
+}
+
+.static-window .win7-content-area {
+    flex: 1;
+    overflow: hidden;
+    /* Or auto if scrolling needed */
+    position: relative;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+    .desktop-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        justify-content: center;
+        width: 100%;
+        padding: 10px;
+        padding-top: 80px;
+    }
+
+    .grid-cell-circle,
+    .grid-cell-details,
+    .grid-cell-progs,
+    .grid-cell-generator {
+        grid-column: 1;
+        grid-row: auto;
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        min-height: 300px;
+        margin-bottom: 20px;
+    }
+
+    .grid-cell-circle {
+        height: 600px;
+        /* Keep aspect ratio roughly? */
+    }
+}

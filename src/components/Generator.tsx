@@ -117,98 +117,214 @@ export const Generator: React.FC = () => {
     };
 
     const styleLabels: Record<string, string> = {
+        [STYLES.POP]: 'Pop',
+        [STYLES.JAZZ]: 'Jazz',
+        [STYLES.BLUES]: 'Blues',
         [STYLES.RNB]: 'R&B',
+        [STYLES.ROCK]: 'Rock',
         [STYLES.LOFI]: 'Lo-Fi',
+        [STYLES.EPIC]: 'Cinematic',
         [STYLES.BOSSA]: 'Bossa Nova',
+        [STYLES.FOLK]: 'Folk',
+        [STYLES.HYPERPOP]: 'Hyperpop',
         [STYLES.JPOP]: 'J-Pop',
         [STYLES.FUTURE]: 'Future Bass',
+        [STYLES.DARK]: 'Dark Trap'
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent' }}>
-            {/* Scrollable Content Area */}
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', padding: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', position: 'relative' }}>
 
-                {/* Top LCD Display Area */}
-                <div style={{ padding: '0 0 15px 0', flexShrink: 0 }}>
-                    <div className="aero-lcd-container">
-                        <div className="aero-lcd-screen">
-                            {generatedProgression ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                                    <div style={{ fontSize: '1.4em', fontWeight: 'bold', color: '#fff', textShadow: '0 0 10px rgba(0,255,255,0.8)' }}>
-                                        {generatedProgression.map(c => c.chordName).join(' - ')}
+            {/* Drawer Container (Absolute) */}
+            <div className={`aero-drawer-container ${isSavedOpen ? 'open' : ''}`}>
+                <div style={{ padding: '8px', borderBottom: '1px solid #333', background: '#1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Memory Card</span>
+                    <button onClick={() => setIsSavedOpen(false)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '12px' }}>✕</button>
+                </div>
+                {/* Re-use aero-widget-inner here for scrolling THE DRAWER only if needed, but simple map is fine */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+                    {savedProgressions.length === 0 ? (
+                        <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
+                            Card Empty<br />Save a progression!
+                        </div>
+                    ) : (
+                        <div className="aero-saved-list">
+                            {savedProgressions.map((p) => (
+                                <div key={p.id} className="aero-saved-item">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                        <span style={{ fontSize: '11px', color: '#fff', fontWeight: 'bold' }}>{new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <div style={{ display: 'flex', gap: '5px' }}>
+                                            <button onClick={() => {
+                                                setGeneratedProgression(p.chords);
+                                                setGeneratedEvents(p.events);
+                                                setStyle(p.style);
+                                                // Assuming root/mode are set by context, or need to be set here if loading from saved
+                                                // setRoot(p.root);
+                                                // setMode(p.mode);
+                                                setIsSavedOpen(false); // Close drawer after loading
+                                            }} className="aero-btn-small" style={{ fontSize: '9px', padding: '2px 6px' }}>LOAD</button>
+                                            <button onClick={(e) => handleDelete(p.id, e)} className="aero-btn-small" style={{ fontSize: '9px', padding: '2px 6px', color: '#d44' }}>DEL</button>
+                                        </div>
                                     </div>
-                                    <div style={{ fontSize: '1em', color: 'rgba(255,255,255,0.7)' }}>
-                                        {generatedProgression.map(c => c.roman).join(' - ')}
-                                    </div>
-                                    <div style={{ fontSize: '0.8em', color: '#00ffcc', marginTop: '5px' }}>
-                                        Style: {style} • {length} Bars
+                                    <div style={{ fontSize: '10px', color: '#aaa', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                                        {p.chords.map(c => c.chordName).join(' - ')}
                                     </div>
                                 </div>
-                            ) : (
-                                <div style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>Ready to Generate...</div>
-                            )}
+                            ))}
                         </div>
-                        <div className="aero-lcd-gloss"></div>
+                    )}
+                </div>
+                {/* Drawer Handle (Pull Tab) - When OPEN, it's at the bottom of the drawer? Or removed? */}
+            </div>
+
+            {/* Manual Drawer Tab (Always visible at top of window if drawer is closed) */}
+            <button
+                className={`aero-drawer-tab ${isSavedOpen ? 'active' : ''}`}
+                onClick={() => setIsSavedOpen(!isSavedOpen)}
+                title={isSavedOpen ? "Close Memory" : "Open Memory Card"}
+            >
+                {isSavedOpen ? '▲ CLOSE' : '▼ MEMORY'}
+            </button>
+
+
+            {/* LCD Display (Absolute Pop-out) */}
+            <div className="aero-lcd-container">
+                <div className="aero-lcd-screen">
+                    <div style={{
+                        fontSize: '10px',
+                        color: '#00ccff',
+                        marginBottom: '4px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                    }}>
+                        <span style={{ marginRight: '10px' }}>Active Sequence</span>
+                        <span>{generatedProgression && generatedProgression.length > 0 ? 'PLY' : 'RDY'}</span>
+                    </div>
+
+                    <div style={{
+                        fontSize: '18px',
+                        fontFamily: 'monospace',
+                        color: '#fff',
+                        textShadow: '0 0 8px rgba(0, 255, 255, 0.6)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                    }}>
+                        {generatedProgression && generatedProgression.length > 0
+                            ? generatedProgression.map(c => c.chordName).join(' - ')
+                            : 'NO DATA'}
+                    </div>
+
+                    <div style={{ position: 'absolute', right: '10px', bottom: '10px', display: 'flex', gap: '4px' }}>
+                        {/* LCD small indicators or mini buttons */}
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: playingId === 'generator' ? '#0f0' : '#333', boxShadow: playingId === 'generator' ? '0 0 5px #0f0' : 'none' }}></div>
                     </div>
                 </div>
+                <div className="aero-lcd-gloss"></div>
+            </div>
 
-                {/* Control Interface - Shiny Buttons */}
-                <div className="aero-controls-panel">
+            {/* Main Controls - FIXED placement (Orbit Layout) */}
+            <div className="aero-generator-controls">
+
+                {/* Center: Play Button (Big) */}
+                <div style={{ position: 'relative', width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ParticleSystem
+                        active={playingId === 'generator'}
+                        width={200}
+                        height={200}
+                        style={{ top: 'calc(50% - 130px)' }} /* Shift up for visual alignment */
+                    />
                     <button
-                        className="aero-btn-round"
-                        title="Generate New"
-                        onClick={handleGenerate}
+                        className={`aero-btn-main aero-btn-round large ${playingId === 'generator' ? 'playing' : ''}`}
+                        style={{ position: 'relative', zIndex: 5 }}
+                        title={playingId === 'generator' ? "Stop" : "Play"}
+                        onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
+                        disabled={!generatedEvents}
                     >
-                        <span style={{ fontSize: '1.5em', transform: 'rotate(45deg)', display: 'block' }}>↻</span>
+                        <span style={{ fontSize: '36px', marginLeft: playingId === 'generator' ? '0' : '4px' }}>
+                            {playingId === 'generator' ? '■' : '▶'}
+                        </span>
                     </button>
 
-                    <div style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <ParticleSystem active={playingId === 'generator'} width={200} height={200} />
-                        <button
-                            className={`aero-btn-main ${playingId === 'generator' ? 'playing' : ''}`}
-                            style={{ position: 'relative', zIndex: 1 }}
-                            title={playingId === 'generator' ? "Stop" : "Play"}
-                            onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
-                            disabled={!generatedEvents}
-                        >
-                            {playingId === 'generator' ? '■' : '▶'}
-                        </button>
-                    </div>
+                    {/* Orbiting Buttons (Absolute relative to center) */}
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <button
-                            className="aero-btn-small"
-                            title="Save"
-                            onClick={handleSave}
-                            disabled={!generatedProgression}
-                        >
-                            💾
-                        </button>
-                        <button
-                            className="aero-btn-small"
-                            title="Download MIDI"
-                            onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
-                            disabled={!generatedProgression}
-                        >
-                            ⬇
-                        </button>
-                    </div>
+                    {/* Top Left: Generate (Orange Ball) */}
+                    <button
+                        className="aero-btn-ball orange"
+                        onClick={handleGenerate}
+                        title="Generate New"
+                        style={{
+                            left: '-72px',
+                            top: '0px',
+                        }}
+                    >
+                        <span style={{ fontSize: '24px' }}>↻</span>
+                    </button>
+
+                    {/* Top Right: Save (Purple Ball) */}
+                    <button
+                        className={`aero-btn-ball purple ${isSavedOpen ? 'active' : ''}`}
+                        onClick={handleSave}
+                        title="Save to Memory"
+                        style={{
+                            right: '-72px',
+                            top: '0px',
+                            paddingTop: '3px'
+                        }}
+                    >
+                        <span style={{ fontSize: '22px' }}>💾</span>
+                    </button>
+
+                    {/* Bottom Left: Rhythm Toggle (Red/Grey Ball) */}
+                    <button
+                        className={`aero-btn-ball ${enableRhythm ? 'red' : 'grey'}`}
+                        onClick={() => setEnableRhythm(!enableRhythm)}
+                        title={enableRhythm ? "Rhythm On" : "Rhythm Off"}
+                        style={{
+                            left: '-72px',
+                            bottom: '0px',
+                        }}
+                    >
+                        <span style={{ fontSize: '22px' }}>🥁</span>
+                    </button>
+
+                    {/* Bottom Right: Download (Cyan Ball) */}
+                    <button
+                        className="aero-btn-ball cyan"
+                        onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
+                        disabled={!generatedProgression}
+                        title="Download MIDI"
+                        style={{
+                            right: '-72px',
+                            bottom: '0px',
+                        }}
+                    >
+                        <span style={{ fontSize: '24px' }}>⬇</span>
+                    </button>
+
                 </div>
+            </div>
 
-                {/* Configuration Panel - Glass Panel */}
+            {/* Scrollable Content Area */}
+            {/* Added styling to reset top padding since controls are outside now */}
+            <div className="aero-widget-inner" style={{ paddingTop: '10px' }}>
+
+                {/* Glass Config Panel */}
                 <div className="aero-config-panel">
                     <div className="aero-form-row">
                         <label>Style</label>
                         <select
                             value={style}
-                            onChange={(e) => setStyle(e.target.value as Style)}
+                            onChange={(e) => setStyle(e.target.value as any)}
                             className="aero-glass-select"
                         >
-                            {Object.values(STYLES).map(s => {
-                                let label = styleLabels[s] || (s.charAt(0).toUpperCase() + s.slice(1));
-                                return <option key={s} value={s}>{label}</option>;
-                            })}
+                            {Object.values(STYLES).map(s => (
+                                <option key={s} value={s}>
+                                    {styleLabels[s] || s.toUpperCase()}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -224,47 +340,13 @@ export const Generator: React.FC = () => {
                             <option value="16">16 Bars</option>
                         </select>
                     </div>
-
-                    <div className="aero-form-row">
-                        <label className="aero-checkbox">
-                            <input type="checkbox" checked={enableRhythm} onChange={(e) => setEnableRhythm(e.target.checked)} />
-                            <span>Rhythm Pattern</span>
-                        </label>
-                    </div>
                 </div>
 
-                {/* Saved List (Collapsible) */}
-                <div style={{ flex: '1 0 auto', marginTop: '15px' }}>
-                    <button
-                        onClick={() => setIsSavedOpen(!isSavedOpen)}
-                        className="aero-accordion-header"
-                    >
-                        {isSavedOpen ? '▼' : '▶'} Saved Items ({savedProgressions.length})
-                    </button>
+                {/* Footer Actions - REMOVED Download button from here */}
+                <div style={{ height: '30px' }}></div>
 
-                    {isSavedOpen && (
-                        <div className="aero-accordion-content">
-                            {savedProgressions.map(prog => (
-                                <div key={prog.id} className="aero-saved-item">
-                                    <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', marginRight: '10px' }}>
-                                        <div style={{ fontWeight: 600, color: '#004466' }}>{prog.name}</div>
-                                        <div style={{ fontSize: '0.85em', color: '#0088aa' }}>
-                                            {prog.chords.map(c => c.chordName).join('-')}
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '4px' }}>
-                                        <button className="aero-mini-btn" onClick={() => handlePlay(prog.id, prog.events)}>
-                                            {playingId === prog.id ? '■' : '▶'}
-                                        </button>
-                                        <button className="aero-mini-btn" onClick={() => handleDownload(prog)}>⬇</button>
-                                        <button className="aero-mini-btn delete" onClick={(e) => handleDelete(prog.id, e)}>✕</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
             </div>
         </div>
     );
 };
+

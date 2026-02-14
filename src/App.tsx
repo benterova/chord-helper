@@ -1,90 +1,47 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { MusicTheoryProvider } from './lib/MusicTheoryContext';
-import { WindowManagerProvider, useWindowManager } from './components/WindowManager';
+import { WindowManagerProvider } from './components/WindowManager'; // Keep for now if context is used elsewhere, but provider might not be needed for layout. 
+// Actually, if we removed useWindowManager from Desktop, we might not need it at all unless other components use it.
+// Let's assume we can remove it for now, or keep it if it holds other state. 
+// The plan said remove it. 
 import { Desktop } from './components/Desktop';
-import { CircleOfFifths } from './components/CircleOfFifths';
-import { ProgressionList } from './components/ProgressionList';
-import { Generator } from './components/Generator';
-import { ScaleDetails } from './components/ScaleDetails';
 import { GlobalSettings } from './components/GlobalSettings';
 import { Header } from './components/Header';
-
-
 import frutigerBg from './assets/frutiger_bg.png';
+import './styles/components/grid.css'; // Import the grid styles
 
-const DesktopInitializer: React.FC = () => {
-  const { openWindow } = useWindowManager();
-
+function App() {
   useEffect(() => {
     // Force background image via JS to ensure correct path resolution
     document.body.style.backgroundImage = `url(${frutigerBg})`;
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center bottom';
     document.body.style.backgroundAttachment = 'fixed';
+  }, []);
 
-    const sizes = {
-      circle: { w: 600, h: 600 },
-      details: { w: 320, h: 600 },
-      progs: { w: 600, h: 280 },
-      gen: { w: 320, h: 280 }
-    };
-
-    // const totalW = sizes.circle.w + sizes.details.w; // 920px -> Unused
-    const startX = 20; // Fixed left margin
-    const startY = 70; // Fixed top margin
-
-    // Circle (Top Left)
-    openWindow('circle', 'Circle of Fifths', <CircleOfFifths />,
-      { width: sizes.circle.w, height: sizes.circle.h },
-      { x: startX, y: startY },
-      '/icon_circle.png'
-    );
-
-    // Scale Details (Top Right) - Touching Circle
-    openWindow('details', 'Scale Details', <ScaleDetails />,
-      { width: sizes.details.w, height: sizes.details.h },
-      { x: startX + sizes.circle.w, y: startY },
-      '/icon_scale.png'
-    );
-
-    // Progression List (Bottom Left) - Touching Circle
-    openWindow('progressions', 'Progression Explorer', <ProgressionList />,
-      { width: sizes.progs.w, height: sizes.progs.h },
-      { x: startX, y: startY + sizes.circle.h },
-      '/icon_progression.png'
-    );
-
-    // Generator (Bottom Right) - Touching Progs & Details
-    openWindow('generator', 'MIDI Generator', <Generator />,
-      { width: sizes.gen.w, height: sizes.gen.h },
-      { x: startX + sizes.progs.w, y: startY + sizes.details.h }, // Align based on column/row
-      '/icon_generator.png'
-    );
-
-  }, []); // Run once on mount
-
-  return (
-    <Desktop>
-      {/* Top Bar / Taskbar Area */}
-      <div className="aero-taskbar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <Header />
-          <div className="taskbar-divider"></div>
-          <GlobalSettings />
-        </div>
-      </div>
-    </Desktop>
-  );
-};
-
-function App() {
   return (
     <MusicTheoryProvider>
       <WindowManagerProvider>
-        <DesktopInitializer />
+        {/* We might still need WindowManagerProvider if some components use useWindowManager() for other things like "active window" state even if layout is static? 
+              AeroWindow used it. Desktop used it. 
+              Desktop doesn't use it anymore. 
+              If no other component uses useWindowManager, we can remove it.
+              Let's keep it for safety in case I missed a hook usage, but empty the initializer.
+          */}
+        <Desktop>
+          {/* Top Bar / Taskbar Area */}
+          <div className="aero-taskbar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+              <Header />
+              <div className="taskbar-divider"></div>
+              <GlobalSettings />
+            </div>
+          </div>
+        </Desktop>
       </WindowManagerProvider>
     </MusicTheoryProvider>
   );
 }
 
 export default App;
+

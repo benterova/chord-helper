@@ -15,9 +15,10 @@ interface ParticleSystemProps {
     active: boolean;
     width?: number;
     height?: number;
+    style?: React.CSSProperties;
 }
 
-export const ParticleSystem: React.FC<ParticleSystemProps> = ({ active, width = 200, height = 200 }) => {
+export const ParticleSystem: React.FC<ParticleSystemProps> = ({ active, width = 200, height = 200, style = {} }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const particles = useRef<Particle[]>([]);
     const requestRef = useRef<number | null>(null);
@@ -132,7 +133,8 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({ active, width = 
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
                 pointerEvents: 'none',
-                zIndex: 0 // Behind the button (if button is z-index 1 or higher)
+                zIndex: 0, // Behind the button (if button is z-index 1 or higher)
+                ...style // Allow override
             }}
         />
     );

@@ -1,29 +1,86 @@
 import React from 'react';
-import { useWindowManager } from './WindowManager';
-import { AeroWindow } from './AeroWindow';
+import { CircleOfFifths } from './CircleOfFifths';
+import { ProgressionList } from './ProgressionList'; /* Fixed import name */
+import { Generator } from './Generator';
+import { ScaleDetails } from './ScaleDetails';
+// import '../styles/components/grid.css'; // Assuming we import this in index.css or here
 
 interface DesktopProps {
     children?: React.ReactNode; // For taskbar or other static elements
 }
 
 export const Desktop: React.FC<DesktopProps> = ({ children }) => {
-    const { windows } = useWindowManager();
-
-
     return (
         <div className="desktop-container" style={{
             position: 'relative',
             width: '100vw',
             height: '100vh',
-            overflow: 'auto',
-
+            overflow: 'hidden', /* Grid handles overflow if needed */
         }}>
-            {windows.map(window => (
-                <AeroWindow key={window.id} id={window.id} />
-            ))}
+            {/* Main Grid Layout */}
+            <div className="desktop-grid">
 
-            <div className="desktop-overlay" style={{ pointerEvents: 'none', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
-                {/* Place for desktop icons if we had them */}
+                {/* Top Left: Circle of Fifths */}
+                <div className="grid-cell-circle static-window">
+                    <div className="win7-titlebar">
+                        <div className="win7-icon">
+                            <img src="/icon_circle.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
+                        </div>
+                        <div className="win7-title-text">Circle of Fifths</div>
+                    </div>
+                    <div className="win7-content-area">
+                        <div className="win7-inner-content">
+                            <CircleOfFifths />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Top Right: Scale Details */}
+                <div className="grid-cell-details static-window">
+                    <div className="win7-titlebar">
+                        <div className="win7-icon">
+                            <img src="/icon_scale.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
+                        </div>
+                        <div className="win7-title-text">Scale Details</div>
+                    </div>
+                    <div className="win7-content-area">
+                        <div className="win7-inner-content">
+                            <ScaleDetails />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom Left: Progression List */}
+                <div className="grid-cell-progs static-window">
+                    <div className="win7-titlebar">
+                        <div className="win7-icon">
+                            <img src="/icon_progression.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
+                        </div>
+                        <div className="win7-title-text">Progression Explorer</div>
+                    </div>
+                    <div className="win7-content-area">
+                        <div className="win7-inner-content">
+                            {/* Check export name, App.tsx used ProgressionList */}
+                            <ProgressionList />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom Right: Generator Widget */}
+                <div className="grid-cell-generator">
+                    {/* Widget has its own internal styling class 'aero-widget-dark' applied by the component or wrapper? 
+                        App.tsx wrapped it. Generator itself might not have the frame. 
+                        Let's check Generator.tsx or wrap it here.
+                        Actually, AeroWindow applied 'aero-widget-dark'. 
+                        So we need to apply it here.
+                    */}
+                    <div className="aero-widget-dark">
+                        <div className="aero-widget-content">
+                            <Generator />
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             {/* Taskbar / Static Controls */}

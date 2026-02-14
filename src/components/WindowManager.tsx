@@ -23,12 +23,13 @@ export interface WindowState {
     position: Position;
     size: Size;
     zIndex: number;
+    variant?: 'default' | 'widget';
 }
 
 interface WindowManagerContextType {
     windows: WindowState[];
     activeWindowId: string | null;
-    openWindow: (id: string, title: string, component: ReactNode, initialSize?: Size, initialPos?: Position, icon?: string) => void;
+    openWindow: (id: string, title: string, component: ReactNode, initialSize?: Size, initialPos?: Position, icon?: string, variant?: 'default' | 'widget') => void;
     focusWindow: (id: string) => void;
     resetLayout: () => void;
     resizeSplit: (x: number, y: number) => void;
@@ -111,20 +112,13 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
 
             const col1W = 600;
             const rightColW = 320;
+            const gap = 20;
 
-            // Row heights are still proportional or fixed? 
-            // The initializer used: 
-            // Row 1: 600px
-            // Row 2: 280px
-            // But let's keep the split ratio concept for HEIGHT if we want, or just hardcode it to match the design?
-            // The previous logic used a splitRatio.y for height. Let's keep that for vertical flexibility
-            // OR we can just hardcode the height split too if the user wants "pixel perfect" 
-            // but the prompt specifically complained about the GAP (horizontal).
-            // Let's stick to the existing vertical split logic for now to avoid changing too much at once,
-            // or better yet, match the initializer's intent: Top row is taller.
+            // Adjust available height for gap
+            const availableHeightForRows = availableHeight - gap;
 
-            const row1H = Math.floor(availableHeight * splitRatio.y);
-            const row2H = availableHeight - row1H;
+            const row1H = Math.floor(availableHeightForRows * splitRatio.y);
+            const row2H = availableHeightForRows - row1H;
 
             return prevWindows.map(w => {
                 if (!w.isOpen || w.isMinimized) return w;
@@ -150,7 +144,7 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
                     x = startX;
                     width = col1W;
                 } else {
-                    x = startX + col1W; // Start immediately after col1
+                    x = startX + col1W + gap; // Start after col1 + gap
                     width = rightColW;
                 }
 
@@ -158,7 +152,7 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
                     y = topBarHeight;
                     height = row1H;
                 } else {
-                    y = topBarHeight + row1H;
+                    y = topBarHeight + row1H + gap;
                     height = row2H;
                 }
 
@@ -199,7 +193,7 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
         setNextZIndex(prev => prev + 1);
     }, [nextZIndex]);
 
-    const openWindow = useCallback((id: string, title: string, component: ReactNode, initialSize: Size = { width: 400, height: 300 }, initialPos?: Position, icon?: string) => {
+    const openWindow = useCallback((id: string, title: string, component: ReactNode, initialSize: Size = { width: 400, height: 300 }, initialPos?: Position, icon?: string, variant?: 'default' | 'widget') => {
         setWindows(prev => {
             const existing = prev.find(w => w.id === id);
             if (existing) {
@@ -219,7 +213,8 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
                 isMaximized: false,
                 position: pos,
                 size: initialSize,
-                zIndex: nextZIndex
+                zIndex: nextZIndex,
+                variant
             }];
         });
         setNextZIndex(prev => prev + 1);

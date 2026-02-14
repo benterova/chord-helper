@@ -24,31 +24,41 @@ export const AeroWindow: React.FC<AeroWindowProps> = ({ id }) => {
         display: windowState.isMinimized ? 'none' : 'flex'
     };
 
+    const isWidget = windowState.variant === 'widget';
+    const baseClass = isWidget ? 'aero-widget-dark' : 'win7-window';
+
     return (
         <div
             ref={windowRef}
-            className={`win7-window ${activeWindowId === id ? 'active' : ''}`}
+            className={`${baseClass} ${activeWindowId === id ? 'active' : ''}`}
             style={style}
             onMouseDown={() => focusWindow(id)}
         >
-            <div className="win7-titlebar" style={{ cursor: 'default' }}>
-                <div className="win7-icon">
-                    {windowState.icon && (
-                        <img
-                            src={windowState.icon}
-                            alt=""
-                            style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.7))' }}
-                        />
-                    )}
+            {!isWidget && (
+                <div className="win7-titlebar" style={{ cursor: 'default' }}>
+                    <div className="win7-icon">
+                        {windowState.icon && (
+                            <img
+                                src={windowState.icon}
+                                alt=""
+                                style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.7))' }}
+                            />
+                        )}
+                    </div>
+                    <div className="win7-title-text">{windowState.title}</div>
                 </div>
-                <div className="win7-title-text">{windowState.title}</div>
-            </div>
+            )}
 
             {!windowState.isMinimized && (
-                <div className="win7-content-area">
-                    <div className="win7-inner-content">
-                        {windowState.component}
-                    </div>
+                <div className={isWidget ? 'aero-widget-content' : 'win7-content-area'}>
+                    {isWidget ? (
+                        windowState.component
+                    ) : (
+                        <div className="win7-inner-content">
+                            {windowState.component}
+                        </div>
+                    )}
+                    {/* Widget Specific Resize Handle (Optional, if needed later) */}
                 </div>
             )}
         </div>

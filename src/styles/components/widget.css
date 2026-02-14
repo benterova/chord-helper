@@ -1,0 +1,604 @@
+/* === Dark Aero Widget Theme === */
+
+.aero-widget-dark {
+    /* Layout Dimensions for Internal Content (Pre-Scale) */
+    width: 260px;
+    height: 180px;
+
+    /* SCALING: 0.75x */
+    /* transform: scale(0.75); */
+    /* SCALING: 0.75x */
+    /* transform: scale(0.75); */
+    transform-origin: top left;
+    position: relative;
+    /* Fix: Establish positioning context for children */
+
+    /* Animation */
+    animation: widgetPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+
+    /* Allow LCD to pop out */
+    overflow: visible !important;
+
+    /* Ensure stacking context */
+    z-index: 10;
+
+    /* Remove background/border from main container, move to ::before */
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+/* The Glass Body - Acts as the layout shell AND visual layer */
+.aero-widget-dark::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+
+    /* Dark Glass Background (Moved from main) */
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.85) 0%, rgba(40, 40, 40, 0.75) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    /* Neon/Glow Borders (Moved from main) */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 20px 50px rgba(0, 0, 0, 0.7),
+        0 0 30px rgba(0, 255, 255, 0.05);
+
+    /* Z-Index Layering: Above LCD (20), Below Drawer (30) */
+    z-index: 25;
+    pointer-events: none;
+    /* Let clicks pass through to content? No, dragging needs clicks. */
+    /* Actually, dragging is on the parent div. Clicks bubble. */
+    /* But if z-index 25 is above content (z-index auto/0), we can't click content! */
+    /* Solution: Content needs z-index > 25. */
+}
+
+/* Hover effects transfer to ::before? Or keep on parent? */
+/* Parent hover triggers ::before change */
+.aero-widget-dark:hover::before {
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        0 25px 60px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+}
+
+.aero-widget-dark:hover {
+    /* Clear parent hover styles since we moved them */
+    box-shadow: none;
+    border-color: transparent;
+}
+
+.aero-widget-dark.active {
+    z-index: 1000 !important;
+}
+
+@keyframes widgetPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.aero-widget-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    position: relative;
+    /* Ensure content starts lower */
+    padding-top: 10px;
+
+    /* IMPORTANT: Content must be above the glass background (z-index 25) */
+    z-index: 26;
+}
+
+.aero-widget-inner {
+    flex: 1;
+    overflow: auto;
+    /* Custom Scrollbar for Dark Mode */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+
+    /* IMPORTANT: Push content down so it doesn't UNDERLAP the LCD */
+    /* LCD is top: -40px. Height 100px. Ends at Y=60. */
+    padding-top: 50px;
+}
+
+.aero-widget-inner::-webkit-scrollbar {
+    width: 6px;
+}
+
+.aero-widget-inner::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.aero-widget-inner::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* === Scoped Styles for Generator within Widget === */
+
+/* LCD Container - Pop Out Logic */
+.aero-widget-dark .aero-lcd-container {
+    background: #000;
+    border: 1px solid #333;
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
+
+    /* Absolute Positioning to be "half out" */
+    position: absolute;
+    top: -45px;
+    height: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    z-index: 20;
+
+    border-radius: 8px 8px 4px 4px;
+    border-top: 1px solid #555;
+    border-bottom: 2px solid #222;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 12px;
+}
+
+.aero-widget-dark .aero-lcd-screen {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    width: 100%;
+    padding: 10px;
+}
+
+/* Drawer Container */
+.aero-drawer-container {
+    position: absolute;
+    top: -60px;
+    /* Match LCD top */
+    left: 5%;
+    /* Match LCD width */
+    width: 90%;
+    height: auto;
+    min-height: 100px;
+    max-height: 300px;
+
+    background: rgba(20, 20, 20, 0.98);
+    border: 1px solid #444;
+    border-top: 1px solid #666;
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+    z-index: 50;
+    /* Above LCD */
+
+    transform: translateY(-110%);
+    /* Hidden OUT OF SIGHT above */
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* backdrop-filter: blur(10px); */
+    /* Removed, causes issues with opacity transition */
+}
+
+.aero-drawer-container.open {
+    transform: translateY(0);
+    /* Slide down to cover LCD */
+    opacity: 1;
+}
+
+/* Drawer Tab - Manual Pull Down */
+.aero-drawer-tab {
+    position: absolute;
+    top: -62px;
+    right: 20px;
+
+    background: linear-gradient(to bottom, #333, #111);
+    border: 1px solid #444;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+
+    color: #888;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 2px 8px;
+
+    cursor: pointer;
+    z-index: 60;
+
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+    transition: color 0.2s, background 0.2s;
+}
+
+.aero-drawer-tab.active {
+    background: #444;
+    color: #fff;
+    z-index: 60;
+}
+
+.aero-drawer-tab:hover {
+    color: #fff;
+    background: #444;
+}
+
+/* Remove old trigger */
+.aero-drawer-trigger {
+    display: none;
+}
+
+/* Dark Button Overrides */
+.aero-widget-dark .aero-btn-round {
+    background: radial-gradient(circle at 50% 30%, #444 0%, #222 100%);
+    border-color: #555;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    color: #ddd;
+}
+
+.aero-widget-dark .aero-btn-round::after {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.01) 100%);
+}
+
+.aero-widget-dark .aero-btn-round:hover {
+    background: radial-gradient(circle at 50% 30%, #555 0%, #333 100%);
+    border-color: #00aeff;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(0, 174, 255, 0.4);
+}
+
+.aero-widget-dark .aero-btn-small {
+    background: linear-gradient(to bottom, #333 0%, #1a1a1a 100%);
+    border-color: #444;
+    color: #ccc;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.aero-widget-dark .aero-btn-small:hover {
+    background: linear-gradient(to bottom, #444 0%, #222 100%);
+    border-color: #00aeff;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0, 174, 255, 0.3);
+}
+
+/* Glass Config Panel - Dark Mode - Enhanced Aero */
+.aero-widget-dark .aero-config-panel {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.aero-widget-dark .aero-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.aero-widget-dark label {
+    color: #88aaff;
+    text-shadow: 0 0 5px rgba(0, 174, 255, 0.3);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 4px;
+}
+
+.aero-widget-dark .aero-glass-select {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 174, 255, 0.2);
+    border-radius: 16px;
+    /* Pill shape */
+    color: #fff;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    padding: 4px 10px;
+    font-size: 11px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    appearance: none;
+    /* Remove default arrow */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2300aeff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 8px;
+    padding-right: 20px;
+}
+
+.aero-widget-dark .aero-glass-select:hover {
+    border-color: rgba(0, 174, 255, 0.6);
+    box-shadow: 0 0 8px rgba(0, 174, 255, 0.2);
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.aero-widget-dark .aero-glass-select option {
+    background: #222;
+    color: #fff;
+}
+
+/* Saved List Dark Mode */
+.aero-widget-dark .aero-accordion-header {
+    background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
+    border-color: #444;
+    color: #ccc;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.aero-widget-dark .aero-accordion-header:hover {
+    background: linear-gradient(to bottom, #333 0%, #222 100%);
+    border-color: #666;
+    color: #fff;
+}
+
+.aero-widget-dark .aero-saved-list {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: #444;
+}
+
+.aero-widget-dark .aero-saved-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.aero-widget-dark .aero-saved-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.aero-widget-dark .aero-saved-item div {
+    color: #ddd !important;
+    /* Force text color override */
+}
+
+/* === Generator Controls Container === */
+.aero-generator-controls {
+    position: relative;
+    /* Push down to clear LCD */
+    /* Push down to clear LCD */
+    margin-top: 55px;
+    height: 90px;
+    margin-bottom: 5px;
+    z-index: 40;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* Container Box (Optional - Uncomment for visual box) */
+    /*
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    */
+}
+
+/* Main Play Button - Big Blue Ball */
+.aero-widget-dark .aero-btn-main {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+
+    /* Enhanced 3D Blue Sphere - Brighter, Glossy */
+    /* Moved internal highlight to top-left (25%) */
+    background: radial-gradient(circle at 25% 25%,
+            #ffffff 0%,
+            #00aeff 20%,
+            #0077aa 45%,
+            #004466 70%,
+            #001122 100%);
+    /* Remove flat border, use shadow for definition */
+    border: none;
+
+    /* Deep Glow & Shadow for 3D context */
+    box-shadow:
+        0 8px 15px rgba(0, 0, 0, 0.6),
+        /* Drop shadow */
+        inset 0 4px 12px rgba(255, 255, 255, 0.5),
+        /* Top highlight */
+        inset 0 -8px 20px rgba(0, 0, 20, 0.6),
+        /* Bottom shading */
+        0 0 12px rgba(0, 174, 255, 0.3);
+    /* Outer glow */
+
+    color: #fff;
+    font-size: 24px;
+
+    /* 3D Icon Effect */
+    text-shadow:
+        0 1px 0 #ccc,
+        0 2px 0 #c9c9c9,
+        0 3px 0 #bbb,
+        0 4px 0 #aaa;
+
+    /* Positioning: Overlap LCD */
+    position: relative;
+    top: 0;
+    z-index: 30;
+
+    /* Move Icon Up slightly */
+    padding-bottom: 6px;
+    /* Push content up from bottom */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, background 0.2s;
+}
+
+.aero-widget-dark .aero-btn-main:hover {
+    transform: scale(1.05);
+    /* No vertical jump, just scale */
+
+    /* Brighter Blue Gradient on Hover - No Grey */
+    background: radial-gradient(circle at 25% 25%,
+            #ffffff 0%,
+            #33ccff 20%,
+            /* Brighter */
+            #0099dd 45%,
+            #005577 70%,
+            #002233 100%);
+
+    box-shadow:
+        0 15px 30px rgba(0, 0, 0, 0.7),
+        inset 0 5px 20px rgba(255, 255, 255, 0.7),
+        inset 0 -10px 25px rgba(0, 0, 20, 0.6),
+        0 0 30px rgba(0, 174, 255, 0.6);
+
+    /* Removed filter: brightness() to avoid greying */
+}
+
+.aero-widget-dark .aero-btn-main:active {
+    transform: scale(0.95);
+    /* Compress slightly, don't jump down */
+
+    background: radial-gradient(circle at 25% 25%,
+            #eeeeee 0%,
+            #0088cc 20%,
+            #004466 45%,
+            #002233 70%,
+            #001111 100%);
+
+    box-shadow:
+        0 5px 10px rgba(0, 0, 0, 0.5),
+        inset 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* PLAYING STATE: Green Ball */
+.aero-widget-dark .aero-btn-main.playing {
+    background: radial-gradient(circle at 25% 25%,
+            #ffffff 0%,
+            #00ff66 20%,
+            #00aa44 45%,
+            #004411 70%,
+            #002200 100%);
+    box-shadow:
+        0 10px 20px rgba(0, 0, 0, 0.6),
+        inset 0 5px 15px rgba(255, 255, 255, 0.5),
+        inset 0 -10px 25px rgba(0, 0, 20, 0.6),
+        0 0 20px rgba(0, 255, 100, 0.5);
+    /* Green glow */
+}
+
+.aero-widget-dark .aero-btn-main.playing:hover {
+    background: radial-gradient(circle at 25% 25%,
+            #ffffff 0%,
+            #66ff99 20%,
+            #00cc55 45%,
+            #006622 70%,
+            #003311 100%);
+    box-shadow:
+        0 15px 30px rgba(0, 0, 0, 0.7),
+        inset 0 5px 20px rgba(255, 255, 255, 0.7),
+        inset 0 -10px 25px rgba(0, 0, 20, 0.6),
+        0 0 30px rgba(0, 255, 100, 0.7);
+}
+
+
+/* === Mini 3D Balls for Orbit === */
+.aero-widget-dark .aero-btn-ball {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    position: absolute;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+
+    /* Base Shadow */
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.5),
+        inset 0 2px 6px rgba(255, 255, 255, 0.4),
+        inset 0 -4px 8px rgba(0, 0, 0, 0.5);
+
+    font-size: 14px;
+}
+
+.aero-widget-dark .aero-btn-ball:hover {
+    transform: scale(1.15);
+    z-index: 10;
+    cursor: pointer;
+    filter: brightness(1.2);
+}
+
+.aero-widget-dark .aero-btn-ball:active {
+    transform: scale(0.9);
+}
+
+/* Orange Ball (Generate) */
+.aero-btn-ball.orange {
+    background: radial-gradient(circle at 30% 30%, #ffcc00, #ff8800, #aa4400);
+    box-shadow:
+        0 5px 10px rgba(0, 0, 0, 0.5),
+        inset 0 3px 8px rgba(255, 255, 255, 0.4),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(255, 136, 0, 0.2);
+}
+
+/* Purple Ball (Save) */
+.aero-btn-ball.purple {
+    background: radial-gradient(circle at 30% 30%, #dd88ff, #aa00ff, #550088);
+    box-shadow:
+        0 5px 10px rgba(0, 0, 0, 0.5),
+        inset 0 3px 8px rgba(255, 255, 255, 0.4),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(170, 0, 255, 0.2);
+}
+
+/* Red Ball (Rhythm - Active) */
+.aero-btn-ball.red {
+    background: radial-gradient(circle at 30% 30%, #ff8888, #ff0000, #880000);
+    box-shadow:
+        0 5px 10px rgba(0, 0, 0, 0.5),
+        inset 0 3px 8px rgba(255, 255, 255, 0.4),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.5),
+        0 0 15px rgba(255, 0, 0, 0.4);
+}
+
+/* Grey Ball (Rhythm - Inactive) */
+.aero-btn-ball.grey {
+    background: radial-gradient(circle at 30% 30%, #bbbbbb, #888888, #444444);
+}
+
+/* Cyan Ball (Download) */
+.aero-btn-ball.cyan {
+    background: radial-gradient(circle at 30% 30%, #ccffff, #00ccff, #006688);
+    box-shadow:
+        0 5px 10px rgba(0, 0, 0, 0.5),
+        inset 0 3px 8px rgba(255, 255, 255, 0.4),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(0, 204, 255, 0.2);
+}

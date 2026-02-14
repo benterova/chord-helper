@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useMusicTheory } from '../lib/MusicTheoryContext';
-import { useWindowManager } from './WindowManager';
+
 import { audioEngine } from '../lib/audio';
 import { NOTES, MODE_DISPLAY_NAMES, type ScaleName } from '../lib/constants';
 
 export const GlobalSettings: React.FC = () => {
     const { root, mode, setRoot, setMode } = useMusicTheory();
-    // const { windows, toggleMinimize, focusWindow, isLocked, setIsLocked } = useWindowManager(); 
-    // We only need reset which is just reload for now, or we can use resetLayout from context if exposed.
-    // But the current code uses window.location.reload(), so we don't need WindowManager context at all here unless we want to use the proper resetLayout.
-    // Let's keep it clean.
-    const { } = useWindowManager(); // Or just remove if unused.
+    // We only need reset which is just reload for now, so we don't need WindowManager context.
 
     const [playingId, setPlayingId] = useState<string | null>(null);
 
