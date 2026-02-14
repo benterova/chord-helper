@@ -7,7 +7,7 @@ interface FloatingPlayerProps {
     onClose: () => void;
 }
 
-export const FloatingPlayer: React.FC<FloatingPlayerProps> = ({ isOpen, onClose }) => {
+export const FloatingPlayer: React.FC<FloatingPlayerProps> = ({ isOpen }) => {
     const nodeRef = useRef(null);
 
     if (!isOpen) return null;

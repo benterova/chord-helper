@@ -11,9 +11,55 @@ import frutigerBg from './assets/frutiger_bg.png';
 import './styles/components/grid.css'; // Import the grid styles
 import { FloatingPlayer } from './components/FloatingPlayer';
 import { useState } from 'react';
+import { driver } from 'driver.js';
+import 'driver.js/dist/driver.css';
+import './styles/driver-custom.css';
+import clippyImage from './assets/clippy.png';
 
 function App() {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+
+    if (!hasSeenWelcome) {
+      const driverObj = driver({
+        showProgress: false,
+        animate: true,
+        allowClose: true,
+        doneBtnText: 'Got it!',
+        nextBtnText: 'Next',
+        prevBtnText: 'Back',
+        steps: [
+          {
+            element: '#midi-generator-taskbar-btn',
+            popover: {
+              title: 'Welcome!',
+              description: `
+                <div class="clippy-tutorial-content">
+                  <img src="${clippyImage}" class="clippy-tutorial-img" alt="Clippy" />
+                  <div class="clippy-tutorial-text">
+                    <strong>Hi! It looks like you're new here.</strong><br/><br/>
+                    Click this button to open the MIDI Generator and start making music!
+                  </div>
+                </div>
+              `,
+              side: 'top',
+              align: 'start',
+            },
+          },
+        ],
+        onDestroyed: () => {
+          localStorage.setItem('hasSeenWelcome', 'true');
+        },
+      });
+
+      // Small delay to ensure the DOM is ready and the user sees the page load first
+      setTimeout(() => {
+        driverObj.drive();
+      }, 1000);
+    }
+  }, []);
 
   useEffect(() => {
     // Force background image via JS to ensure correct path resolution
@@ -39,6 +85,7 @@ function App() {
                 <button
                   className={`taskbar-item ${isPlayerOpen ? 'active' : ''}`}
                   onClick={() => setIsPlayerOpen(!isPlayerOpen)}
+                  id="midi-generator-taskbar-btn"
                   style={{
                     background: isPlayerOpen ? 'linear-gradient(to bottom, #d9f2ff 0%, #87cfff 100%)' : 'transparent',
                     border: isPlayerOpen ? '1px solid #3c7fb1' : '1px solid transparent',

@@ -1,0 +1,89 @@
+/* Y2K / Windows 98 Style for driver.js Popover */
+
+/* The main popover box */
+.driver-popover {
+    background-color: #ffffe1;
+    /* Classic tooltip yellow */
+    color: #000;
+    border: 1px solid #000;
+    border-radius: 0;
+    /* No rounded corners */
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+    /* Hard shadow */
+    font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+    padding: 10px;
+    max-width: 250px;
+}
+
+/* Title styling */
+.driver-popover-title {
+    font-weight: bold;
+    font-size: 12px;
+    margin-bottom: 5px;
+    display: none;
+    /* We might hide the default title if we control HTML */
+}
+
+/* Description text */
+.driver-popover-description {
+    line-height: 1.4;
+}
+
+/* Buttons */
+.driver-popover-footer {
+    margin-top: 10px;
+}
+
+.driver-popover-footer button {
+    background: #c0c0c0;
+    /* Windows gray */
+    border: 2px solid #fff;
+    border-right-color: #808080;
+    border-bottom-color: #808080;
+    color: #000;
+    font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+    padding: 3px 8px;
+    margin-left: 5px;
+    cursor: pointer;
+    text-shadow: none;
+    outline: none;
+}
+
+.driver-popover-footer button:active {
+    border: 2px solid #808080;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+}
+
+.driver-popover-footer .driver-popover-next-btn {
+    font-weight: bold;
+}
+
+.driver-popover-arrow {
+    border: 0;
+}
+
+/* Specifically target our custom HTML content if needed */
+.clippy-tutorial-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.clippy-tutorial-img {
+    width: 60px;
+    height: auto;
+    object-fit: contain;
+}
+
+.clippy-tutorial-text {
+    flex: 1;
+}
+
+/* Highlighted element glow override if desired, or keep default */
+.driver-active-element {
+    outline: 2px dashed #000 !important;
+    outline-offset: 4px;
+}
