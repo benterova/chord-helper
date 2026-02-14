@@ -390,11 +390,30 @@
     z-index: 100;
 }
 
+/* Variant: Circle (Desktop) - Left Side */
+.clippy-container.clippy-circle {
+    right: auto;
+    left: -220px;
+    /* Start off-screen left */
+}
+
+.clippy-container.clippy-circle.visible {
+    right: auto;
+    left: 20px;
+    /* Slide in to visible */
+}
+
 .clippy-scaling-wrapper {
     position: relative;
     width: 100%;
     height: 100%;
     animation: float 3s ease-in-out infinite;
+}
+
+.clippy-container.clippy-circle .clippy-image {
+    transform: scaleX(-1);
+    right: auto;
+    left: 0;
 }
 
 .clippy-image {
@@ -422,6 +441,11 @@
     z-index: 101;
 }
 
+.clippy-container.clippy-circle .clippy-bubble {
+    right: auto;
+    left: 10px;
+}
+
 .clippy-bubble::after {
     content: '';
     position: absolute;
@@ -444,6 +468,12 @@
     border-color: #000 transparent;
     display: block;
     width: 0;
+}
+
+.clippy-container.clippy-circle .clippy-bubble::after,
+.clippy-container.clippy-circle .clippy-bubble::before {
+    right: auto;
+    left: 40px;
 }
 
 .clippy-bubble-content strong {

@@ -78,7 +78,7 @@ export const Clippy: React.FC<ClippyProps & { variant?: 'generator' | 'circle' }
     };
 
     return (
-        <div className={`clippy-container ${isVisible ? 'visible' : ''}`}>
+        <div className={`clippy-container clippy-${variant} ${isVisible ? 'visible' : ''}`}>
             <div className="clippy-scaling-wrapper">
                 <div className="clippy-bubble">
                     <div className="clippy-bubble-content">
