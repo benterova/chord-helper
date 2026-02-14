@@ -105,7 +105,7 @@ function App() {
                     minWidth: '140px'
                   }}
                 >
-                  <img src="/app_icon.png" alt="" style={{ width: 16, height: 16, filter: isPlayerOpen ? 'none' : 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }}
+                  <img src="app_icon.png" alt="" style={{ width: 16, height: 16, filter: isPlayerOpen ? 'none' : 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }}
                     onError={(e) => e.currentTarget.style.display = 'none'} />
                   <span>MIDI Generator</span>
                 </button>

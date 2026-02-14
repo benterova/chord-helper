@@ -24,7 +24,7 @@ export const Desktop: React.FC<DesktopProps> = ({ children }) => {
                 <div className="grid-cell-circle static-window">
                     <div className="win7-titlebar">
                         <div className="win7-icon">
-                            <img src="/icon_circle.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
+                            <img src="icon_circle.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
                         </div>
                         <div className="win7-title-text">Circle of Fifths</div>
                     </div>
@@ -39,7 +39,7 @@ export const Desktop: React.FC<DesktopProps> = ({ children }) => {
                 <div className="grid-cell-details static-window">
                     <div className="win7-titlebar">
                         <div className="win7-icon">
-                            <img src="/icon_scale.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
+                            <img src="icon_scale.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
                         </div>
                         <div className="win7-title-text">Scale Details</div>
                     </div>
@@ -54,7 +54,7 @@ export const Desktop: React.FC<DesktopProps> = ({ children }) => {
                 <div className="grid-cell-progs static-window">
                     <div className="win7-titlebar">
                         <div className="win7-icon">
-                            <img src="/icon_progression.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
+                            <img src="icon_progression.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
                         </div>
                         <div className="win7-title-text">Progression Explorer</div>
                     </div>
