@@ -3,6 +3,7 @@ export class AudioEngineImpl {
     private ctx: AudioContext;
     private masterGain: GainNode;
     private metronomeGain: GainNode;
+    public analyser: AnalyserNode;
 
     private schedulerInterval: number | null = null;
     private nextNoteTime: number = 0;
@@ -26,7 +27,12 @@ export class AudioEngineImpl {
 
         this.masterGain = this.ctx.createGain();
         this.masterGain.gain.value = 0.3;
-        this.masterGain.connect(this.ctx.destination);
+
+        this.analyser = this.ctx.createAnalyser();
+        this.analyser.fftSize = 256; // Good balance for visualizer
+
+        this.masterGain.connect(this.analyser);
+        this.analyser.connect(this.ctx.destination);
 
         this.metronomeGain = this.ctx.createGain();
         this.metronomeGain.gain.value = 0.3; // Default on

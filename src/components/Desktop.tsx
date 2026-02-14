@@ -68,17 +68,7 @@ export const Desktop: React.FC<DesktopProps> = ({ children }) => {
 
                 {/* Bottom Right: Generator Widget */}
                 <div className="grid-cell-generator">
-                    {/* Widget has its own internal styling class 'aero-widget-dark' applied by the component or wrapper? 
-                        App.tsx wrapped it. Generator itself might not have the frame. 
-                        Let's check Generator.tsx or wrap it here.
-                        Actually, AeroWindow applied 'aero-widget-dark'. 
-                        So we need to apply it here.
-                    */}
-                    <div className="aero-widget-dark">
-                        <div className="aero-widget-content">
-                            <Generator />
-                        </div>
-                    </div>
+                    <Generator />
                 </div>
 
             </div>

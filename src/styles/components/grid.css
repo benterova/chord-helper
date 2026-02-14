@@ -2,10 +2,10 @@
 
 .desktop-grid {
     display: grid;
-    grid-template-columns: 600px 320px;
-    grid-template-rows: auto auto;
-    /* 600px and rest, basically */
-    gap: 20px;
+    grid-template-columns: 600px 520px;
+    grid-template-rows: auto 1fr;
+    /* First row auto (based on content), second takes remainder */
+    gap: 30px;
     padding: 20px;
     padding-top: 70px;
     /* Top bar spacing */
@@ -48,7 +48,12 @@
     /* Widget has its own fixed size */
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    /* Aligns to top of its cell area */
+
+    /* Fix overlap/height issues */
+    margin-top: 40px;
+    align-self: start;
 }
 
 /* Window "Wrapper" style - to mimic the look of AeroWindow without absolute positioning */

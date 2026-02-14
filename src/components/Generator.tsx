@@ -6,10 +6,12 @@ import { audioEngine } from '../lib/audio';
 import useLocalStorage from '../hooks/useLocalStorage';
 
 import { useMusicTheory } from '../lib/MusicTheoryContext';
-import { ParticleSystem } from './ParticleSystem';
+// import { ParticleSystem } from './ParticleSystem';
+import { Visualizer } from './Visualizer';
 
 
 // ... imports ...
+import { Clippy } from './Clippy';
 
 export const Generator: React.FC = () => {
     const { root, mode } = useMusicTheory();
@@ -38,9 +40,10 @@ export const Generator: React.FC = () => {
 
     // Saved Progressions State
     const [savedProgressions, setSavedProgressions] = useLocalStorage<SavedProgression[]>('saved_progressions', []);
-    const [isSavedOpen, setIsSavedOpen] = useState(false); // Accordion state
+    // const [isSavedOpen, setIsSavedOpen] = useState(false); // REMOVED
     const [_isGenerating, _setIsGenerating] = useState(false);
-    const [displayMode, setDisplayMode] = useState<'roman' | 'chord'>('roman'); // Accordion state
+    const [displayMode, setDisplayMode] = useState<'roman' | 'chord'>('roman');
+    const [showInfo, setShowInfo] = useState(false);
 
     React.useEffect(() => {
         return audioEngine.subscribe(id => setPlayingId(id));
@@ -81,7 +84,7 @@ export const Generator: React.FC = () => {
         };
 
         setSavedProgressions([newProgression, ...savedProgressions]);
-        setIsSavedOpen(true); // Auto-open to show success
+        setScreenMode('MEMORY'); // Auto-switch to Memory screen
     };
 
     const handleDelete = (id: string, e: React.MouseEvent) => {
@@ -159,256 +162,146 @@ export const Generator: React.FC = () => {
         setLength(lengths[nextIndex]);
     };
 
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', position: 'relative' }}>
+    const [screenMode, setScreenMode] = useState<'MAIN' | 'MEMORY'>('MAIN');
 
-            {/* Drawer Container (Absolute) */}
-            <div className={`aero-drawer-container ${isSavedOpen ? 'open' : ''}`}>
-                <div style={{ padding: '8px', borderBottom: '1px solid #333', background: '#1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Memory Card</span>
-                    <button onClick={() => setIsSavedOpen(false)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '12px' }}>✕</button>
-                </div>
-                {/* Re-use aero-widget-inner here for scrolling THE DRAWER only if needed, but simple map is fine */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-                    {savedProgressions.length === 0 ? (
-                        <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
-                            Card Empty<br />Save a progression!
-                        </div>
-                    ) : (
-                        <div className="aero-saved-list">
-                            {savedProgressions.map((p) => (
-                                <div key={p.id} className="aero-saved-item">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                        <span style={{ fontSize: '11px', color: '#fff', fontWeight: 'bold' }}>{new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                        <div style={{ display: 'flex', gap: '5px' }}>
-                                            <button onClick={() => {
-                                                setGeneratedProgression(p.chords);
-                                                setGeneratedEvents(p.events);
-                                                setStyle(p.style);
-                                                // Assuming root/mode are set by context, or need to be set here if loading from saved
-                                                // setRoot(p.root);
-                                                // setMode(p.mode);
-                                                setIsSavedOpen(false); // Close drawer after loading
-                                            }} className="aero-btn-small" style={{ fontSize: '9px', padding: '2px 6px' }}>LOAD</button>
-                                            <button onClick={(e) => handleDelete(p.id, e)} className="aero-btn-small" style={{ fontSize: '9px', padding: '2px 6px', color: '#d44' }}>DEL</button>
-                                        </div>
+    // ... (keep existing effects)
+
+    const toggleScreenMode = () => {
+        setScreenMode(prev => prev === 'MAIN' ? 'MEMORY' : 'MAIN');
+    };
+
+    return (
+        <div className="aero-widget-dark"> {/* Main Device Body */}
+
+            {/* 1. LCD SCREEN (Center) */}
+            <div className="aero-widget-content">
+                <div className="aero-lcd-container">
+                    {/* ... (LCD content) ... */}
+                    <div className="aero-lcd-screen">
+
+                        {screenMode === 'MAIN' ? (
+                            <>
+                                {/* Top Bar: Status */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px', opacity: 0.7 }}>
+                                    <span>{playingId === 'generator' ? 'PLAYING' : 'READY'}</span>
+                                    <span>{styleLabels[style].toUpperCase()}</span>
+                                </div>
+
+                                {/* Detailed Info */}
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%', overflow: 'hidden' }}>
+                                    <div className={`roman-numerals ${length >= 8 ? 'lcd-text-squished' : ''}`} style={{
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        fontSize: '14px',
+                                        fontWeight: 'bold',
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                        {generatedProgression
+                                            ? generatedProgression.map(c => displayMode === 'roman' ? c.roman : c.chordName).join(' - ')
+                                            : 'NO DISC'}
                                     </div>
-                                    <div style={{ fontSize: '10px', color: '#aaa', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                                        {p.chords.map(c => c.chordName).join(' - ')}
+
+                                    {/* Visualizer Overlay */}
+                                    <div style={{ width: '100%', height: '20px', marginTop: '5px', opacity: 0.5 }}>
+                                        <Visualizer width={200} height={20} color="#00ffff" style={{ width: '100%', height: '100%' }} />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+
+                                {/* Bottom Bar: Settings info */}
+                                <div className="lcd-row" style={{ width: '100%' }}>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <span className="lcd-label">LEN: <span className="lcd-value">{length}</span></span>
+                                        <span className="lcd-label">RHYTHM: <span className="lcd-value">{enableRhythm ? 'ON' : 'OFF'}</span></span>
+                                    </div>
+                                    <span className="lcd-label">{displayMode === 'roman' ? 'ROM' : 'CHD'}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* MEMORY MODE (Saved List) */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', borderBottom: '1px solid rgba(0,255,255,0.3)', paddingBottom: '2px', marginBottom: '4px' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 'bold' }}>MEMORY CARD</span>
+                                    <span style={{ fontSize: '10px' }}>{savedProgressions.length}/10</span>
+                                </div>
+                                <div style={{ flex: 1, overflowY: 'auto', width: '100%', fontSize: '10px', gap: '2px', display: 'flex', flexDirection: 'column' }}>
+                                    {savedProgressions.length === 0 ? (
+                                        <div style={{ textAlign: 'center', marginTop: '10px', opacity: 0.5 }}>[EMPTY]</div>
+                                    ) : (
+                                        savedProgressions.map(p => (
+                                            <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', cursor: 'pointer', padding: '2px', background: 'rgba(0,255,255,0.1)' }}
+                                                onClick={() => {
+                                                    setGeneratedProgression(p.chords);
+                                                    setGeneratedEvents(p.events);
+                                                    setStyle(p.style);
+                                                    setScreenMode('MAIN');
+                                                }}>
+                                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>
+                                                    {p.chords.map(c => c.chordName).join('-')}
+                                                </span>
+                                                <span onClick={(e) => handleDelete(p.id, e)} style={{ color: '#ff6666', fontWeight: 'bold', paddingLeft: '5px' }}>X</span>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </>
+                        )}
+
+                    </div>
                 </div>
-                {/* Drawer Handle (Pull Tab) - When OPEN, it's at the bottom of the drawer? Or removed? */}
             </div>
 
-            {/* Manual Drawer Tab (Always visible at top of window if drawer is closed) */}
-            <button
-                className={`aero-drawer-tab ${isSavedOpen ? 'active' : ''}`}
-                onClick={() => setIsSavedOpen(!isSavedOpen)}
-                title={isSavedOpen ? "Close Memory" : "Open Memory Card"}
-            >
-                {isSavedOpen ? '▲ CLOSE' : '▼ MEMORY'}
-            </button>
+            {/* Clippy Assistant */}
+            <Clippy isVisible={showInfo} onClose={() => setShowInfo(false)} />
 
+            {/* 2. PHYSICAL CONTROLS (Overlay) */}
+            <div className="player-controls-container">
 
-            {/* LCD Display (Absolute Pop-out) - Expanded for Settings */}
-            <div className="aero-lcd-container">
-                <div className="aero-lcd-screen" style={{
-                    background: '#0a1510',
-                    border: '2px solid #3a4a40',
-                    borderRadius: '4px',
-                    padding: '8px',
-                    marginBottom: '10px',
-                    fontFamily: "'Courier New', monospace",
-                    color: '#00ff41',
-                    textShadow: '0 0 5px rgba(0, 255, 65, 0.5)',
-                    position: 'relative',
-                    minHeight: '60px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between'
-                }}>
-                    {/* Display Mode Toggle */}
-                    <button
-                        className="aero-lcd-toggle"
-                        onClick={() => setDisplayMode(prev => prev === 'roman' ? 'chord' : 'roman')}
-                        title="Toggle Display Mode"
-                    >
-                        {displayMode === 'roman' ? 'ROM' : 'CHD'}
+                {/* LEFT CLUSTER: Transport (Vertical) */}
+                <div className="control-cluster-left">
+                    <button className="silver-btn silver-btn-small" onClick={() => cycleStyle(-1)} title="Prev Style">
+                        ◄◄
                     </button>
-
-                    <div style={{
-                        fontSize: '10px',
-                        opacity: 0.7,
-                        textTransform: 'uppercase',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        marginBottom: '4px',
-                        paddingLeft: '35px' // Space for toggle button
-                    }}>
-                        <span>Active Sequence</span>
-                        <span>{generatedProgression ? `${length} BARS` : 'READY'}</span>
-                    </div>
-
-                    <div className={`roman-numerals ${length === 16 ? 'lcd-text-squished' : ''}`} style={{
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        marginBottom: '6px',
-                        textAlign: 'center'
-                    }}>
-                        {generatedProgression && generatedProgression.length > 0
-                            ? generatedProgression.map(c => displayMode === 'roman' ? c.roman : c.chordName).join(' - ')
-                            : 'PRESS GENERATE'}
-                    </div>
-
-                    {/* Bottom Row: Settings (Style & Length) - Refactored Layout */}
-                    <div className="aero-settings-row">
-                        {/* STYLE Control */}
-                        <div className="aero-setting-item">
-                            <div className="info-col">
-                                <span className="label">STYLE</span>
-                                <span className="value">{styleLabels[style].toUpperCase()}</span>
-                            </div>
-                            <div className="controls-col">
-                                <button onClick={() => cycleStyle(-1)} title="Previous Style">◄</button>
-                                <button onClick={() => cycleStyle(1)} title="Next Style">►</button>
-                            </div>
-                        </div>
-
-                        {/* LENGTH Control */}
-                        <div className="aero-setting-item">
-                            <div className="info-col">
-                                <span className="label">LENGTH</span>
-                                <span className="value">{length} BARS</span>
-                            </div>
-                            <div className="controls-col">
-                                <button onClick={() => cycleLength(-1)} title="Decrease Length">◄</button>
-                                <button onClick={() => cycleLength(1)} title="Increase Length">►</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style={{ position: 'absolute', right: '10px', top: '10px', display: 'flex', gap: '4px' }}>
-                        {/* LCD small indicators or mini buttons */}
-                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: playingId === 'generator' ? '#0f0' : '#333', boxShadow: playingId === 'generator' ? '0 0 5px #0f0' : 'none' }}></div>
-                    </div>
-                </div>
-                <div className="aero-lcd-gloss"></div>
-            </div>
-
-            {/* Main Controls - Retro Synth Orbit Layout */}
-            <div className="aero-generator-controls">
-
-                {/* Center: Play Button (Big) */}
-                <div style={{ position: 'relative', width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ParticleSystem
-                        active={playingId === 'generator'}
-                        width={200}
-                        height={200}
-                        color="rgba(0, 174, 255, "
-                        intensity={playingId === 'generator' ? 'high' : 'low'}
-                    />
-                    <button
-                        className={`aero-btn-main aero-btn-round large ${playingId === 'generator' ? 'playing' : ''}`}
-                        style={{ position: 'relative', zIndex: 30 }}
-                        title={playingId === 'generator' ? "Stop" : "Play"}
+                    <button className="silver-btn silver-btn-large"
                         onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
-                        disabled={!generatedEvents}
-                    >
-                        <span style={{ fontSize: '36px', marginLeft: playingId === 'generator' ? '0' : '4px' }}>
-                            {playingId === 'generator' ? '■' : '▶'}
-                        </span>
+                        title={playingId === 'generator' ? "Stop" : "Play"}>
+                        {playingId === 'generator' ? '■' : '▶'}
                     </button>
-
-                    {/* Orbiting Buttons (Absolute relative to center) */}
-
-                    {/* Top Left: Generate (Orange) */}
-                    <div style={{ position: 'absolute', left: '-65px', top: '-10px', width: '40px', height: '40px' }}>
-                        <ParticleSystem
-                            active={true}
-                            width={80}
-                            height={80}
-                            color="rgba(255, 170, 0, "
-                            intensity="low"
-                        />
-                        <button
-                            className="aero-btn-ball orange"
-                            onClick={handleGenerate}
-                            title="Generate New"
-                            style={{ position: 'relative', left: 0, top: 0 }}
-                        >
-                            <span style={{ fontSize: '24px' }}>↻</span>
-                        </button>
-                    </div>
-
-                    {/* Top Right: Save (Purple) */}
-                    <div style={{ position: 'absolute', right: '-65px', top: '-10px', width: '40px', height: '40px' }}>
-                        <ParticleSystem
-                            active={true}
-                            width={80}
-                            height={80}
-                            color="rgba(204, 0, 255, "
-                            intensity="low"
-                        />
-                        <button
-                            className={`aero-btn-ball purple ${isSavedOpen ? 'active' : ''}`}
-                            onClick={handleSave}
-                            title="Save to Memory"
-                            style={{ position: 'relative', right: 0, top: 0, paddingTop: '3px' }}
-                        >
-                            <span style={{ fontSize: '22px' }}>💾</span>
-                        </button>
-                    </div>
-
-                    {/* Bottom Left: Rhythm Toggle (Red) */}
-                    <div style={{ position: 'absolute', left: '-65px', bottom: '-10px', width: '40px', height: '40px' }}>
-                        <ParticleSystem
-                            active={enableRhythm}
-                            width={80}
-                            height={80}
-                            color="rgba(255, 0, 68, "
-                            intensity={enableRhythm ? "medium" : "low"}
-                        />
-                        <button
-                            className={`aero-btn-ball ${enableRhythm ? 'red' : 'grey'}`}
-                            onClick={() => setEnableRhythm(!enableRhythm)}
-                            title={enableRhythm ? "Rhythm On" : "Rhythm Off"}
-                            style={{ position: 'relative', left: 0, bottom: 0 }}
-                        >
-                            <span style={{ fontSize: '22px' }}>🥁</span>
-                        </button>
-                    </div>
-
-                    {/* Bottom Right: Download (Cyan) */}
-                    <div style={{ position: 'absolute', right: '-65px', bottom: '-10px', width: '40px', height: '40px' }}>
-                        <ParticleSystem
-                            active={!!generatedProgression}
-                            width={80}
-                            height={80}
-                            color="rgba(0, 204, 255, "
-                            intensity="low"
-                        />
-                        <button
-                            className="aero-btn-ball cyan"
-                            onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
-                            disabled={!generatedProgression}
-                            title="Download MIDI"
-                            style={{ position: 'relative', right: 0, bottom: 0 }}
-                        >
-                            <span style={{ fontSize: '24px' }}>⬇</span>
-                        </button>
-                    </div>
-
+                    <button className="silver-btn silver-btn-small" onClick={() => cycleStyle(1)} title="Next Style">
+                        ►►
+                    </button>
                 </div>
+
+                {/* RIGHT CLUSTER: Main Actions (Vertical) */}
+                <div className="control-cluster-right">
+                    <button className="silver-btn silver-btn-large" onClick={handleGenerate} title="Generate">
+                        GEN
+                    </button>
+                    <button className="silver-btn silver-btn-large" onClick={handleSave} title="Save">
+                        SAVE
+                    </button>
+                </div>
+
+                {/* BOTTOM BAR: Settings (Horizontal Pills) */}
+                <div className="control-bar-bottom">
+                    <button className="silver-btn silver-btn-pill" onClick={() => cycleLength(1)} title="Length">
+                        LEN
+                    </button>
+                    <button className={`silver-btn silver-btn-pill ${enableRhythm ? 'active' : ''}`} onClick={() => setEnableRhythm(!enableRhythm)} title="Rhythm">
+                        RHY
+                    </button>
+                    <button className={`silver-btn silver-btn-pill ${screenMode === 'MEMORY' ? 'active' : ''}`} onClick={toggleScreenMode} title="Memory">
+                        MEM
+                    </button>
+                    <button className="silver-btn silver-btn-pill" onClick={() => setDisplayMode(prev => prev === 'roman' ? 'chord' : 'roman')} title="View">
+                        VIEW
+                    </button>
+                    <button className={`silver-btn silver-btn-pill ${showInfo ? 'active' : ''}`} onClick={() => setShowInfo(!showInfo)} title="Info">
+                        ??
+                    </button>
+                </div>
+
             </div>
 
-            {/* Config Panel REMOVED - moved to LCD */}
         </div>
     );
 };
