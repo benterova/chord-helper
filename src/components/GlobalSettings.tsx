@@ -12,11 +12,16 @@ export const GlobalSettings: React.FC = () => {
     }, []);
     const [isMetronome, setIsMetronome] = useState(true);
     const [isLoop, setIsLoop] = useState(false);
+    const [isChill, setIsChill] = useState(false);
 
     // Sync Audio State
     useEffect(() => {
         audioEngine.setMetronome(isMetronome);
     }, [isMetronome]);
+
+    useEffect(() => {
+        audioEngine.setChillMode(isChill);
+    }, [isChill]);
 
     useEffect(() => {
         // Subscribe to external changes
@@ -58,6 +63,15 @@ export const GlobalSettings: React.FC = () => {
                         onChange={handleLoopToggle}
                     />
                     Loop
+                </label>
+
+                <label className="taskbar-checkbox">
+                    <input
+                        type="checkbox"
+                        checked={isChill}
+                        onChange={e => setIsChill(e.target.checked)}
+                    />
+                    Chill Mode 🌊
                 </label>
 
                 <button

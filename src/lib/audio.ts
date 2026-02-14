@@ -18,6 +18,18 @@ export class AudioEngineImpl {
     private listeners: ((playingId: string | null) => void)[] = [];
     private loopListeners: ((isLooping: boolean) => void)[] = [];
 
+    // Chill Mode State
+    private chillOption: boolean = false;
+    private filterNode: BiquadFilterNode;
+    private lfo: OscillatorNode;
+    private lfoGain: GainNode;
+    private chillGain: GainNode;
+
+    // Chill Arp State
+    private arpGain: GainNode;
+    private delayNode: DelayNode;
+    private delayFeedback: GainNode;
+
     // Metronome state
     private bpm: number = 120;
     private nextBeatTime: number = 0;
@@ -29,6 +41,49 @@ export class AudioEngineImpl {
         this.masterGain = this.ctx.createGain();
         this.masterGain.gain.value = 0.3;
 
+        // Initialize Chill Mode Nodes
+        this.filterNode = this.ctx.createBiquadFilter();
+        this.filterNode.type = 'lowpass';
+        this.filterNode.frequency.value = 800; // Base cutoff
+        this.filterNode.Q.value = 5; // Resonance
+
+        this.lfo = this.ctx.createOscillator();
+        this.lfo.type = 'sine';
+        this.lfo.frequency.value = 0.2; // Slow sweep
+
+        this.lfoGain = this.ctx.createGain();
+        this.lfoGain.gain.value = 400; // Modulation depth
+
+        this.chillGain = this.ctx.createGain();
+        this.chillGain.gain.value = 0.8;
+
+        // Arp & Delay
+        this.arpGain = this.ctx.createGain();
+        this.arpGain.gain.value = 0.15; // Quiet
+
+        this.delayNode = this.ctx.createDelay();
+        this.delayNode.delayTime.value = 0.3;
+
+        this.delayFeedback = this.ctx.createGain();
+        this.delayFeedback.gain.value = 0.4;
+
+        // Audio Graph for LFO -> Filter
+        this.lfo.connect(this.lfoGain);
+        this.lfoGain.connect(this.filterNode.frequency);
+        this.lfo.start();
+
+        // Audio Graph for Arp -> Delay -> Master
+        this.arpGain.connect(this.delayNode);
+        this.delayNode.connect(this.delayFeedback);
+        this.delayFeedback.connect(this.delayNode);
+        this.delayNode.connect(this.masterGain);
+        this.arpGain.connect(this.masterGain); // Dry signal too
+
+        // Filter connection involves conditional routing in scheduleNotes, 
+        // but we setup the filter -> master path here
+        this.filterNode.connect(this.chillGain);
+        this.chillGain.connect(this.masterGain);
+
         this.analyser = this.ctx.createAnalyser();
         this.analyser.fftSize = 256; // Good balance for visualizer
 
@@ -38,6 +93,16 @@ export class AudioEngineImpl {
         this.metronomeGain = this.ctx.createGain();
         this.metronomeGain.gain.value = 0.3; // Default on
         this.metronomeGain.connect(this.ctx.destination);
+    }
+
+    public setChillMode(enabled: boolean) {
+        this.chillOption = enabled;
+        // Adjust master gain to compensate for filter energy loss if needed
+        // For now, steady.
+    }
+
+    public getChillMode() {
+        return this.chillOption;
     }
 
     public setBpm(bpm: number) {
@@ -200,19 +265,32 @@ export class AudioEngineImpl {
     }
 
     private scheduleNotes(notes: number[], duration: number, time: number, track: boolean = false) {
+        // If Chill Mode is on, maybe trigger an arp occasionally
+        if (this.chillOption && track) {
+            // "Occasional" - e.g. 40% chance per chord, or based on time
+            if (Math.random() < 0.6) {
+                this.scheduleArp(notes, time, duration);
+            }
+        }
+
         notes.forEach(note => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
 
-            osc.type = 'triangle';
+            osc.type = this.chillOption ? 'sine' : 'triangle'; // Smoother sound for chill
             osc.frequency.setValueAtTime(this.midiToFreq(note), time);
 
             gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(0.3 / notes.length, time + 0.05);
+            gain.gain.linearRampToValueAtTime((0.3 / notes.length) * (this.chillOption ? 0.8 : 1), time + 0.05);
             gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
 
             osc.connect(gain);
-            gain.connect(this.masterGain);
+
+            if (this.chillOption) {
+                gain.connect(this.filterNode);
+            } else {
+                gain.connect(this.masterGain);
+            }
 
             osc.start(time);
             osc.stop(time + duration + 0.1);
@@ -230,6 +308,46 @@ export class AudioEngineImpl {
                 gain.disconnect();
             };
         });
+    }
+
+    private scheduleArp(notes: number[], startTime: number, totalDuration: number) {
+        // Pick 3-4 random notes from the chord to arp
+        const arpCount = 3 + Math.floor(Math.random() * 2);
+        const noteDuration = 0.15; // Short play
+        const interval = 0.12; // Time between notes
+
+        for (let i = 0; i < arpCount; i++) {
+            const noteIndex = Math.floor(Math.random() * notes.length);
+            const midi = notes[noteIndex] + 12; // Octave up
+            const time = startTime + (i * interval) + (Math.random() * 0.05); // Slight humanize
+
+            if (time > startTime + totalDuration) break;
+
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(this.midiToFreq(midi), time);
+
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.4, time + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + noteDuration);
+
+            osc.connect(gain);
+            gain.connect(this.arpGain); // Goes to delay -> master
+
+            osc.start(time);
+            osc.stop(time + noteDuration + 0.1);
+
+            this.activeNodes.push(osc);
+            this.activeNodes.push(gain);
+
+            osc.onended = () => {
+                this.activeNodes = this.activeNodes.filter(n => n !== osc && n !== gain);
+                osc.disconnect();
+                gain.disconnect();
+            };
+        }
     }
 
     private scheduleMetronomeClick(time: number, isAccent: boolean) {

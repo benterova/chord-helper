@@ -63,6 +63,7 @@ export const Generator: React.FC = () => {
     }, [enableRhythm]);
 
     const handleGenerate = () => {
+        audioEngine.stop();
         const progression = generateProgression(root, mode as any, { style, length });
         const events = applyRhythm(progression, style, enableRhythm);
         setGeneratedProgression(progression);
