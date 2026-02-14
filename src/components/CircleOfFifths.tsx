@@ -252,6 +252,10 @@ export const CircleOfFifths: React.FC = () => {
                             <span style={{ fontSize: '11px', color: '#004466' }}>Dim</span>
                         </div>
                     </div>
+
+                    <div style={{ marginTop: '8px', fontSize: '10px', color: '#005580', fontStyle: 'italic' }}>
+                        <strong>Tip:</strong> Click on chords to play them.
+                    </div>
                 </div>
             </div>
 

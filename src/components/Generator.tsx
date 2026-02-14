@@ -8,6 +8,7 @@ import useLocalStorage from '../hooks/useLocalStorage';
 import { useMusicTheory } from '../lib/MusicTheoryContext';
 import { ParticleSystem } from './ParticleSystem';
 
+
 // ... imports ...
 
 export const Generator: React.FC = () => {
@@ -38,6 +39,8 @@ export const Generator: React.FC = () => {
     // Saved Progressions State
     const [savedProgressions, setSavedProgressions] = useLocalStorage<SavedProgression[]>('saved_progressions', []);
     const [isSavedOpen, setIsSavedOpen] = useState(false); // Accordion state
+    const [_isGenerating, _setIsGenerating] = useState(false);
+    const [displayMode, setDisplayMode] = useState<'roman' | 'chord'>('roman'); // Accordion state
 
     React.useEffect(() => {
         return audioEngine.subscribe(id => setPlayingId(id));
@@ -132,6 +135,30 @@ export const Generator: React.FC = () => {
         [STYLES.DARK]: 'Dark Trap'
     };
 
+    const cycleStyle = (direction: 1 | -1) => {
+        const styles = Object.values(STYLES);
+        const currentIndex = styles.indexOf(style);
+        let nextIndex = currentIndex + direction;
+
+        // Wrap around
+        if (nextIndex < 0) nextIndex = styles.length - 1;
+        if (nextIndex >= styles.length) nextIndex = 0;
+
+        setStyle(styles[nextIndex]);
+    };
+
+    const cycleLength = (direction: 1 | -1) => {
+        const lengths = [4, 8, 16];
+        const currentIndex = lengths.indexOf(length);
+        let nextIndex = currentIndex + direction;
+
+        // Wrap around
+        if (nextIndex < 0) nextIndex = lengths.length - 1;
+        if (nextIndex >= lengths.length) nextIndex = 0;
+
+        setLength(lengths[nextIndex]);
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', position: 'relative' }}>
 
@@ -187,37 +214,87 @@ export const Generator: React.FC = () => {
             </button>
 
 
-            {/* LCD Display (Absolute Pop-out) */}
+            {/* LCD Display (Absolute Pop-out) - Expanded for Settings */}
             <div className="aero-lcd-container">
-                <div className="aero-lcd-screen">
+                <div className="aero-lcd-screen" style={{
+                    background: '#0a1510',
+                    border: '2px solid #3a4a40',
+                    borderRadius: '4px',
+                    padding: '8px',
+                    marginBottom: '10px',
+                    fontFamily: "'Courier New', monospace",
+                    color: '#00ff41',
+                    textShadow: '0 0 5px rgba(0, 255, 65, 0.5)',
+                    position: 'relative',
+                    minHeight: '60px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                }}>
+                    {/* Display Mode Toggle */}
+                    <button
+                        className="aero-lcd-toggle"
+                        onClick={() => setDisplayMode(prev => prev === 'roman' ? 'chord' : 'roman')}
+                        title="Toggle Display Mode"
+                    >
+                        {displayMode === 'roman' ? 'ROM' : 'CHD'}
+                    </button>
+
                     <div style={{
                         fontSize: '10px',
-                        color: '#00ccff',
-                        marginBottom: '4px',
+                        opacity: 0.7,
+                        textTransform: 'uppercase',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px'
+                        marginBottom: '4px',
+                        paddingLeft: '35px' // Space for toggle button
                     }}>
-                        <span style={{ marginRight: '10px' }}>Active Sequence</span>
-                        <span>{generatedProgression && generatedProgression.length > 0 ? 'PLY' : 'RDY'}</span>
+                        <span>Active Sequence</span>
+                        <span>{generatedProgression ? `${length} BARS` : 'READY'}</span>
                     </div>
 
-                    <div style={{
-                        fontSize: '18px',
-                        fontFamily: 'monospace',
-                        color: '#fff',
-                        textShadow: '0 0 8px rgba(0, 255, 255, 0.6)',
+                    <div className={`roman-numerals ${length === 16 ? 'lcd-text-squished' : ''}`} style={{
+                        fontSize: '16px',
+                        fontWeight: 'bold',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis'
+                        textOverflow: 'ellipsis',
+                        marginBottom: '6px',
+                        textAlign: 'center'
                     }}>
                         {generatedProgression && generatedProgression.length > 0
-                            ? generatedProgression.map(c => c.chordName).join(' - ')
-                            : 'NO DATA'}
+                            ? generatedProgression.map(c => displayMode === 'roman' ? c.roman : c.chordName).join(' - ')
+                            : 'PRESS GENERATE'}
                     </div>
 
-                    <div style={{ position: 'absolute', right: '10px', bottom: '10px', display: 'flex', gap: '4px' }}>
+                    {/* Bottom Row: Settings (Style & Length) - Refactored Layout */}
+                    <div className="aero-settings-row">
+                        {/* STYLE Control */}
+                        <div className="aero-setting-item">
+                            <div className="info-col">
+                                <span className="label">STYLE</span>
+                                <span className="value">{styleLabels[style].toUpperCase()}</span>
+                            </div>
+                            <div className="controls-col">
+                                <button onClick={() => cycleStyle(-1)} title="Previous Style">◄</button>
+                                <button onClick={() => cycleStyle(1)} title="Next Style">►</button>
+                            </div>
+                        </div>
+
+                        {/* LENGTH Control */}
+                        <div className="aero-setting-item">
+                            <div className="info-col">
+                                <span className="label">LENGTH</span>
+                                <span className="value">{length} BARS</span>
+                            </div>
+                            <div className="controls-col">
+                                <button onClick={() => cycleLength(-1)} title="Decrease Length">◄</button>
+                                <button onClick={() => cycleLength(1)} title="Increase Length">►</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ position: 'absolute', right: '10px', top: '10px', display: 'flex', gap: '4px' }}>
                         {/* LCD small indicators or mini buttons */}
                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: playingId === 'generator' ? '#0f0' : '#333', boxShadow: playingId === 'generator' ? '0 0 5px #0f0' : 'none' }}></div>
                     </div>
@@ -225,7 +302,7 @@ export const Generator: React.FC = () => {
                 <div className="aero-lcd-gloss"></div>
             </div>
 
-            {/* Main Controls - FIXED placement (Orbit Layout) */}
+            {/* Main Controls - Retro Synth Orbit Layout */}
             <div className="aero-generator-controls">
 
                 {/* Center: Play Button (Big) */}
@@ -234,11 +311,12 @@ export const Generator: React.FC = () => {
                         active={playingId === 'generator'}
                         width={200}
                         height={200}
-                        style={{ top: 'calc(50% - 130px)' }} /* Shift up for visual alignment */
+                        color="rgba(0, 174, 255, "
+                        intensity={playingId === 'generator' ? 'high' : 'low'}
                     />
                     <button
                         className={`aero-btn-main aero-btn-round large ${playingId === 'generator' ? 'playing' : ''}`}
-                        style={{ position: 'relative', zIndex: 5 }}
+                        style={{ position: 'relative', zIndex: 30 }}
                         title={playingId === 'generator' ? "Stop" : "Play"}
                         onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
                         disabled={!generatedEvents}
@@ -250,102 +328,87 @@ export const Generator: React.FC = () => {
 
                     {/* Orbiting Buttons (Absolute relative to center) */}
 
-                    {/* Top Left: Generate (Orange Ball) */}
-                    <button
-                        className="aero-btn-ball orange"
-                        onClick={handleGenerate}
-                        title="Generate New"
-                        style={{
-                            left: '-72px',
-                            top: '0px',
-                        }}
-                    >
-                        <span style={{ fontSize: '24px' }}>↻</span>
-                    </button>
+                    {/* Top Left: Generate (Orange) */}
+                    <div style={{ position: 'absolute', left: '-65px', top: '-10px', width: '40px', height: '40px' }}>
+                        <ParticleSystem
+                            active={true}
+                            width={80}
+                            height={80}
+                            color="rgba(255, 170, 0, "
+                            intensity="low"
+                        />
+                        <button
+                            className="aero-btn-ball orange"
+                            onClick={handleGenerate}
+                            title="Generate New"
+                            style={{ position: 'relative', left: 0, top: 0 }}
+                        >
+                            <span style={{ fontSize: '24px' }}>↻</span>
+                        </button>
+                    </div>
 
-                    {/* Top Right: Save (Purple Ball) */}
-                    <button
-                        className={`aero-btn-ball purple ${isSavedOpen ? 'active' : ''}`}
-                        onClick={handleSave}
-                        title="Save to Memory"
-                        style={{
-                            right: '-72px',
-                            top: '0px',
-                            paddingTop: '3px'
-                        }}
-                    >
-                        <span style={{ fontSize: '22px' }}>💾</span>
-                    </button>
+                    {/* Top Right: Save (Purple) */}
+                    <div style={{ position: 'absolute', right: '-65px', top: '-10px', width: '40px', height: '40px' }}>
+                        <ParticleSystem
+                            active={true}
+                            width={80}
+                            height={80}
+                            color="rgba(204, 0, 255, "
+                            intensity="low"
+                        />
+                        <button
+                            className={`aero-btn-ball purple ${isSavedOpen ? 'active' : ''}`}
+                            onClick={handleSave}
+                            title="Save to Memory"
+                            style={{ position: 'relative', right: 0, top: 0, paddingTop: '3px' }}
+                        >
+                            <span style={{ fontSize: '22px' }}>💾</span>
+                        </button>
+                    </div>
 
-                    {/* Bottom Left: Rhythm Toggle (Red/Grey Ball) */}
-                    <button
-                        className={`aero-btn-ball ${enableRhythm ? 'red' : 'grey'}`}
-                        onClick={() => setEnableRhythm(!enableRhythm)}
-                        title={enableRhythm ? "Rhythm On" : "Rhythm Off"}
-                        style={{
-                            left: '-72px',
-                            bottom: '0px',
-                        }}
-                    >
-                        <span style={{ fontSize: '22px' }}>🥁</span>
-                    </button>
+                    {/* Bottom Left: Rhythm Toggle (Red) */}
+                    <div style={{ position: 'absolute', left: '-65px', bottom: '-10px', width: '40px', height: '40px' }}>
+                        <ParticleSystem
+                            active={enableRhythm}
+                            width={80}
+                            height={80}
+                            color="rgba(255, 0, 68, "
+                            intensity={enableRhythm ? "medium" : "low"}
+                        />
+                        <button
+                            className={`aero-btn-ball ${enableRhythm ? 'red' : 'grey'}`}
+                            onClick={() => setEnableRhythm(!enableRhythm)}
+                            title={enableRhythm ? "Rhythm On" : "Rhythm Off"}
+                            style={{ position: 'relative', left: 0, bottom: 0 }}
+                        >
+                            <span style={{ fontSize: '22px' }}>🥁</span>
+                        </button>
+                    </div>
 
-                    {/* Bottom Right: Download (Cyan Ball) */}
-                    <button
-                        className="aero-btn-ball cyan"
-                        onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
-                        disabled={!generatedProgression}
-                        title="Download MIDI"
-                        style={{
-                            right: '-72px',
-                            bottom: '0px',
-                        }}
-                    >
-                        <span style={{ fontSize: '24px' }}>⬇</span>
-                    </button>
+                    {/* Bottom Right: Download (Cyan) */}
+                    <div style={{ position: 'absolute', right: '-65px', bottom: '-10px', width: '40px', height: '40px' }}>
+                        <ParticleSystem
+                            active={!!generatedProgression}
+                            width={80}
+                            height={80}
+                            color="rgba(0, 204, 255, "
+                            intensity="low"
+                        />
+                        <button
+                            className="aero-btn-ball cyan"
+                            onClick={() => generatedProgression && generatedEvents && handleDownload({ events: generatedEvents, root, mode, style, chords: generatedProgression })}
+                            disabled={!generatedProgression}
+                            title="Download MIDI"
+                            style={{ position: 'relative', right: 0, bottom: 0 }}
+                        >
+                            <span style={{ fontSize: '24px' }}>⬇</span>
+                        </button>
+                    </div>
 
                 </div>
             </div>
 
-            {/* Scrollable Content Area */}
-            {/* Added styling to reset top padding since controls are outside now */}
-            <div className="aero-widget-inner" style={{ paddingTop: '10px' }}>
-
-                {/* Glass Config Panel */}
-                <div className="aero-config-panel">
-                    <div className="aero-form-row">
-                        <label>Style</label>
-                        <select
-                            value={style}
-                            onChange={(e) => setStyle(e.target.value as any)}
-                            className="aero-glass-select"
-                        >
-                            {Object.values(STYLES).map(s => (
-                                <option key={s} value={s}>
-                                    {styleLabels[s] || s.toUpperCase()}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="aero-form-row">
-                        <label>Length</label>
-                        <select
-                            value={length}
-                            onChange={(e) => setLength(parseInt(e.target.value, 10))}
-                            className="aero-glass-select"
-                        >
-                            <option value="4">4 Bars</option>
-                            <option value="8">8 Bars</option>
-                            <option value="16">16 Bars</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Footer Actions - REMOVED Download button from here */}
-                <div style={{ height: '30px' }}></div>
-
-            </div>
+            {/* Config Panel REMOVED - moved to LCD */}
         </div>
     );
 };

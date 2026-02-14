@@ -114,6 +114,76 @@ export function getChords(root: string, mode: ScaleName): Chord[] {
     });
 }
 
+export function getBorrowedChords(root: string, mode: ScaleName): Chord[] {
+    const rootIndex = NOTES.indexOf(root as any);
+    if (rootIndex === -1) return [];
+
+    const borrowed: Chord[] = [];
+
+    // Helper to create a chord object
+    const createChord = (noteIndex: number, quality: ChordQuality, degree: number, roman: string, intervalOverrides?: ChordIntervals): Chord => {
+        const noteName = NOTES[noteIndex % 12];
+        let suffix = '';
+        if (quality === 'minor') suffix = 'm';
+        if (quality === 'dim') suffix = 'dim';
+        if (quality === 'aug') suffix = 'aug';
+
+        // Basic intervals if not provided
+        let intervals = intervalOverrides || { third: 4, fifth: 7, seventh: 11, ninth: 14 };
+        if (!intervalOverrides) {
+            if (quality === 'minor') intervals = { third: 3, fifth: 7, seventh: 10, ninth: 14 };
+            if (quality === 'dim') intervals = { third: 3, fifth: 6, seventh: 9, ninth: 13 }; // dim7 usually
+            if (quality === 'aug') intervals = { third: 4, fifth: 8, seventh: 10, ninth: 14 };
+        }
+
+        return {
+            root: noteName,
+            chordName: noteName + suffix,
+            roman,
+            quality,
+            degree, // Artificial degree for these purposes
+            intervals
+        };
+    };
+
+    if (mode === 'ionian') {
+        // 1. Secondary Dominants
+        // V/V (II7) - Major on 2nd degree. Root + 2 semitones.
+        borrowed.push(createChord(rootIndex + 2, 'major', 2, 'II', { third: 4, fifth: 7, seventh: 10, ninth: 14 }));
+
+        // V/vi (III7) - Major on 3rd degree. Root + 4 semitones.
+        borrowed.push(createChord(rootIndex + 4, 'major', 3, 'III', { third: 4, fifth: 7, seventh: 10, ninth: 14 }));
+
+        // V/ii (VI7) - Major on 6th degree. Root + 9 semitones.
+        borrowed.push(createChord(rootIndex + 9, 'major', 6, 'VI', { third: 4, fifth: 7, seventh: 10, ninth: 14 }));
+
+        // 2. Modal Interchange (from Parallel Minor)
+        // bIII (Major) - Root + 3 semitones
+        borrowed.push(createChord(rootIndex + 3, 'major', 3, 'bIII'));
+
+        // iv (Minor) - Root + 5 semitones
+        borrowed.push(createChord(rootIndex + 5, 'minor', 4, 'iv'));
+
+        // bVI (Major) - Root + 8 semitones
+        borrowed.push(createChord(rootIndex + 8, 'major', 6, 'bVI'));
+
+        // bVII (Major) - Root + 10 semitones
+        borrowed.push(createChord(rootIndex + 10, 'major', 7, 'bVII'));
+    }
+    else if (mode === 'natural_minor') {
+        // 1. Picardy Third (Major I)
+        borrowed.push(createChord(rootIndex, 'major', 1, 'I'));
+
+        // 2. Dorian IV (Major IV) - Root + 5 semitones
+        borrowed.push(createChord(rootIndex + 5, 'major', 4, 'IV'));
+
+        // 3. Neapolitan (bII Major) - Root + 1 semitone
+        borrowed.push(createChord(rootIndex + 1, 'major', 2, 'bII'));
+    }
+
+    return borrowed;
+}
+
 function getRomanNumeral(num: number): string {
     const map: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII' };
     return map[num] || '';

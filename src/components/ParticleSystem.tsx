@@ -16,55 +16,73 @@ interface ParticleSystemProps {
     width?: number;
     height?: number;
     style?: React.CSSProperties;
+    color?: string; // Base color for particles (e.g., 'rgba(255, 100, 0, ')
+    intensity?: 'low' | 'medium' | 'high';
 }
 
-export const ParticleSystem: React.FC<ParticleSystemProps> = ({ active, width = 200, height = 200, style = {} }) => {
+export const ParticleSystem: React.FC<ParticleSystemProps> = ({
+    active,
+    width = 200,
+    height = 200,
+    style = {},
+    color: baseColor,
+    intensity = 'medium'
+}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const particles = useRef<Particle[]>([]);
     const requestRef = useRef<number | null>(null);
 
     const createParticle = (w: number, h: number): Particle => {
         // Spawn randomly around the center
-        const xOffset = (Math.random() - 0.5) * 80;
-        const yOffset = (Math.random() - 0.5) * 80;
+        const xOffset = (Math.random() - 0.5) * (width * 0.4);
+        const yOffset = (Math.random() - 0.5) * (height * 0.4);
 
-        // Randomize Layer
-        const layer = Math.random();
-        let speed, color, size;
+        // Determine properties based on intensity
+        let speedMultiplier = 1;
+        let sizeMultiplier = 1;
 
-        if (layer < 0.33) {
-            // Layer 1: Background (Very Slow, Small, Deep Colors)
-            speed = Math.random() * 0.2 + 0.1; // Much slower
-            // Mix of Deep Blue and Purple
-            color = Math.random() > 0.5 ? 'rgba(0, 80, 200, ' : 'rgba(80, 0, 180, ';
-            size = Math.random() * 1.5 + 0.5;
-        } else if (layer < 0.66) {
-            // Layer 2: Mid (Gentle, Aero Colors)
-            speed = Math.random() * 0.5 + 0.3;
-            // distinct Aero Blue and Teal
-            color = Math.random() > 0.5 ? 'rgba(0, 174, 255, ' : 'rgba(0, 220, 200, ';
-            size = Math.random() * 2 + 1;
-        } else {
-            // Layer 3: Foreground (Sparkles, Vivid)
-            speed = Math.random() * 1.0 + 0.5;
-            // White, Cyan, and a hint of Lime for pop
-            const rand = Math.random();
-            if (rand < 0.6) color = 'rgba(255, 255, 255, ';
-            else if (rand < 0.9) color = 'rgba(0, 255, 255, ';
-            else color = 'rgba(200, 255, 100, '; // Subtle Lime pop
-
-            size = Math.random() * 2 + 2;
+        if (intensity === 'low') {
+            speedMultiplier = 0.5;
+            sizeMultiplier = 0.7;
+        } else if (intensity === 'high') {
+            speedMultiplier = 1.5;
+            sizeMultiplier = 1.2;
         }
+
+        // Randomize speed
+        const speed = (Math.random() * 0.5 + 0.2) * speedMultiplier;
+
+        // Determine Color
+        let pColor;
+        if (baseColor) {
+            // Use provided base color
+            pColor = baseColor;
+        } else {
+            // Default Blue/Purple mix (Original logic)
+            const layer = Math.random();
+            if (layer < 0.33) {
+                pColor = Math.random() > 0.5 ? 'rgba(0, 80, 200, ' : 'rgba(80, 0, 180, ';
+            } else if (layer < 0.66) {
+                pColor = Math.random() > 0.5 ? 'rgba(0, 174, 255, ' : 'rgba(0, 220, 200, ';
+            } else {
+                const rand = Math.random();
+                if (rand < 0.6) pColor = 'rgba(255, 255, 255, ';
+                else if (rand < 0.9) pColor = 'rgba(0, 255, 255, ';
+                else pColor = 'rgba(200, 255, 100, ';
+            }
+        }
+
+        const size = (Math.random() * 2 + 1) * sizeMultiplier;
 
         return {
             x: w / 2 + xOffset,
             y: h / 2 + yOffset,
-            vx: (Math.random() - 0.5) * 0.5,
+            vx: (Math.random() - 0.5) * 0.5 * speedMultiplier,
             vy: -speed,
             life: 0,
             maxLife: Math.random() * 60 + 40,
             size: size,
-            color: color
+            color: pColor
         };
     };
 
@@ -78,7 +96,10 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({ active, width = 
 
         // Spawn new particles if active
         if (active) {
-            for (let i = 0; i < 2; i++) {
+            // Spawn rate based on intensity
+            const spawnCount = intensity === 'high' ? 3 : (intensity === 'low' ? (Math.random() > 0.5 ? 1 : 0) : 1);
+
+            for (let i = 0; i < spawnCount; i++) {
                 particles.current.push(createParticle(canvas.width, canvas.height));
             }
         }
@@ -104,7 +125,7 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({ active, width = 
             const alpha = (1 - (p.life / p.maxLife)) * 0.8; // Max opacity 0.8
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = p.color + alpha + ')';
+            ctx.fillStyle = p.color + alpha + ')'; // Assuming color string ends with ", "
             ctx.fill();
 
             // Glow
@@ -133,8 +154,8 @@ export const ParticleSystem: React.FC<ParticleSystemProps> = ({ active, width = 
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
                 pointerEvents: 'none',
-                zIndex: 0, // Behind the button (if button is z-index 1 or higher)
-                ...style // Allow override
+                zIndex: 0,
+                ...style
             }}
         />
     );
