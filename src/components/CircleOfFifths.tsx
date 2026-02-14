@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { audioEngine } from '../lib/audio';
 import { type Chord, getChordMidiNotes, getChordNotes } from '../lib/theory';
-import { CIRCLE_OF_FIFTHS } from '../lib/constants';
+import { CIRCLE_OF_FIFTHS, NOTES, MODE_DISPLAY_NAMES, type ScaleName } from '../lib/constants';
 
 import { useMusicTheory } from '../lib/MusicTheoryContext';
 
 export const CircleOfFifths: React.FC = () => {
-    const { root, chords } = useMusicTheory();
+    const { root, mode, chords, setRoot, setMode } = useMusicTheory();
 
     // Frutiger Aero Palette - Vibrant & Glossy
     const QUALITY_COLORS: Record<string, string> = {
@@ -69,8 +69,74 @@ export const CircleOfFifths: React.FC = () => {
         audioEngine.playNotes(midiNotes, 0.5, true);
     };
 
+    const standardModes: ScaleName[] = ['ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'natural_minor', 'locrian'];
+    const otherScales: ScaleName[] = ['harmonic_minor', 'melodic_minor', 'major_pentatonic', 'minor_pentatonic', 'blues'];
+
     return (
         <div className="circle-section" ref={containerRef} onMouseMove={handleMouseMove} style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', fontFamily: '"Segoe UI", sans-serif', position: 'relative', overflow: 'hidden' }}>
+
+            {/* Control Panel (Key & Scale) */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '10px',
+                padding: '10px',
+                background: 'linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.4))',
+                borderBottom: '1px solid rgba(255,255,255,0.6)',
+                zIndex: 10
+            }}>
+                {/* Key Selector */}
+                <select
+                    value={root}
+                    onChange={(e) => setRoot(e.target.value)}
+                    style={{
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid #a0c0d0',
+                        background: 'linear-gradient(to bottom, #f0faff, #d0e8f5)',
+                        color: '#004466',
+                        fontWeight: 'bold',
+                        fontSize: '12px',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        boxShadow: 'inset 0 1px 2px #fff, 0 1px 2px rgba(0,0,0,0.1)'
+                    }}
+                >
+                    {NOTES.map(note => (
+                        <option key={note} value={note}>{note}</option>
+                    ))}
+                </select>
+
+                {/* Scale Selector */}
+                <select
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value as ScaleName)}
+                    style={{
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid #a0c0d0',
+                        background: 'linear-gradient(to bottom, #f0faff, #d0e8f5)',
+                        color: '#004466',
+                        fontWeight: 'bold',
+                        fontSize: '12px',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        boxShadow: 'inset 0 1px 2px #fff, 0 1px 2px rgba(0,0,0,0.1)',
+                        minWidth: '120px'
+                    }}
+                >
+                    <optgroup label="Standard Modes">
+                        {standardModes.map(m => (
+                            <option key={m} value={m}>{MODE_DISPLAY_NAMES[m]}</option>
+                        ))}
+                    </optgroup>
+                    <optgroup label="Other Scales">
+                        {otherScales.map(m => (
+                            <option key={m} value={m}>{MODE_DISPLAY_NAMES[m]}</option>
+                        ))}
+                    </optgroup>
+                </select>
+            </div>
 
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
                 {/* Chart Area */}

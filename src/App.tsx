@@ -9,8 +9,12 @@ import { GlobalSettings } from './components/GlobalSettings';
 import { Header } from './components/Header';
 import frutigerBg from './assets/frutiger_bg.png';
 import './styles/components/grid.css'; // Import the grid styles
+import { FloatingPlayer } from './components/FloatingPlayer';
+import { useState } from 'react';
 
 function App() {
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+
   useEffect(() => {
     // Force background image via JS to ensure correct path resolution
     document.body.style.backgroundImage = `url(${frutigerBg})`;
@@ -22,21 +26,54 @@ function App() {
   return (
     <MusicTheoryProvider>
       <WindowManagerProvider>
-        {/* We might still need WindowManagerProvider if some components use useWindowManager() for other things like "active window" state even if layout is static? 
-              AeroWindow used it. Desktop used it. 
-              Desktop doesn't use it anymore. 
-              If no other component uses useWindowManager, we can remove it.
-              Let's keep it for safety in case I missed a hook usage, but empty the initializer.
-          */}
         <Desktop>
           {/* Top Bar / Taskbar Area */}
           <div className="aero-taskbar">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-              <Header />
-              <div className="taskbar-divider"></div>
-              <GlobalSettings />
+            <div className="aero-taskbar">
+              {/* LEFT: Start + Running Apps */}
+              <div className="taskbar-left">
+                <Header />
+                <div className="taskbar-divider"></div>
+
+                {/* Running Apps / Quick Launch */}
+                <button
+                  className={`taskbar-item ${isPlayerOpen ? 'active' : ''}`}
+                  onClick={() => setIsPlayerOpen(!isPlayerOpen)}
+                  style={{
+                    background: isPlayerOpen ? 'linear-gradient(to bottom, #d9f2ff 0%, #87cfff 100%)' : 'transparent',
+                    border: isPlayerOpen ? '1px solid #3c7fb1' : '1px solid transparent',
+                    borderRadius: '4px',
+                    padding: '4px 12px',
+                    color: isPlayerOpen ? '#003366' : 'rgba(255,255,255,0.9)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    textShadow: isPlayerOpen ? '0 1px 0 rgba(255,255,255,0.7)' : '0 1px 2px rgba(0,0,0,0.5)',
+                    boxShadow: isPlayerOpen
+                      ? 'inset 0 1px 3px rgba(0,0,0,0.2), 0 0 5px rgba(135, 207, 255, 0.8)'
+                      : 'none',
+                    fontWeight: isPlayerOpen ? 'bold' : 'normal',
+                    transition: 'all 0.2s ease',
+                    minWidth: '140px'
+                  }}
+                >
+                  <img src="/app_icon.png" alt="" style={{ width: 16, height: 16, filter: isPlayerOpen ? 'none' : 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }}
+                    onError={(e) => e.currentTarget.style.display = 'none'} />
+                  <span>MIDI Generator</span>
+                </button>
+              </div>
+
+              {/* RIGHT: System Tray / Global Settings */}
+              <div className="taskbar-right">
+                <GlobalSettings />
+                <div className="taskbar-clock">
+                  {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
             </div>
           </div>
+          <FloatingPlayer isOpen={isPlayerOpen} onClose={() => setIsPlayerOpen(false)} />
         </Desktop>
       </WindowManagerProvider>
     </MusicTheoryProvider>
@@ -44,4 +81,5 @@ function App() {
 }
 
 export default App;
+
 

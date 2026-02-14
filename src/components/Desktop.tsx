@@ -1,7 +1,7 @@
 import React from 'react';
 import { CircleOfFifths } from './CircleOfFifths';
 import { ProgressionList } from './ProgressionList'; /* Fixed import name */
-import { Generator } from './Generator';
+// import { Generator } from './Generator';
 import { ScaleDetails } from './ScaleDetails';
 // import '../styles/components/grid.css'; // Assuming we import this in index.css or here
 
@@ -66,9 +66,9 @@ export const Desktop: React.FC<DesktopProps> = ({ children }) => {
                     </div>
                 </div>
 
-                {/* Bottom Right: Generator Widget */}
-                <div className="grid-cell-generator">
-                    <Generator />
+                {/* Bottom Right: Generator Widget (MOVED TO FLOATING) */}
+                <div className="grid-cell-generator" style={{ display: 'none' }}>
+                    {/* <Generator /> */}
                 </div>
 
             </div>
