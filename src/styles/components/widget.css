@@ -180,9 +180,9 @@
 /* Left Cluster: Transport (Vertical) */
 .control-cluster-left {
     position: absolute;
-    left: 45px;
-    /* Increased */
-    top: 55%;
+    left: 70px;
+    /* Increased from 45px to bring closer to screen */
+    top: 46%;
     /* Moved down slightly to follow curve */
     transform: translateY(-50%);
     width: 80px;
@@ -203,9 +203,9 @@
 /* Right Cluster: Actions (Vertical) */
 .control-cluster-right {
     position: absolute;
-    right: 45px;
-    /* Increased */
-    top: 45%;
+    right: 80px;
+    /* Increased from 45px to bring closer to screen */
+    top: 55%;
     /* Moved up slightly to follow asymmetrical curve */
     transform: translateY(-50%);
     width: 80px;

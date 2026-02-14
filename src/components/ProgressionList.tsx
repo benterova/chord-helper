@@ -10,6 +10,7 @@ export const ProgressionList: React.FC = () => {
     const { root, chords, mode } = useMusicTheory();
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [playingId, setPlayingId] = useState<string | null>(null);
+    const [useRhythm, setUseRhythm] = useState(true);
 
     const matchProgressions = PROGRESSIONS[mode] || [];
 
@@ -50,7 +51,7 @@ export const ProgressionList: React.FC = () => {
         const style = getStyleFromGenre(prog.genre);
         // Use a default rhythm or simple chords if the genre doesn't strongly imply a rhythm?
         // Actually, let's use the engine's applyRhythm to get consistent behavior with metronome.
-        const events = applyRhythm(progChords, style, true);
+        const events = applyRhythm(progChords, style, useRhythm);
 
         // Convert to sequence for audio engine
         const secondsPerTick = 0.5 / 128; // Standard 120bpm assumption for conversion? No, applyRhythm output is in ticks.
@@ -119,6 +120,17 @@ export const ProgressionList: React.FC = () => {
                             <span>Play</span>
                         </button>
                     )}
+                </div>
+                <div className="aero-toolbar-separator"></div>
+                <div className="aero-toolbar-group">
+                    <button
+                        className={`aero-toolbar-btn ${useRhythm ? 'active' : ''}`}
+                        onClick={() => setUseRhythm(!useRhythm)}
+                        style={{ minWidth: '100px' }}
+                    >
+                        <span style={{ fontSize: '1.2em' }}>🥁</span>
+                        <span>Rhythm: {useRhythm ? 'ON' : 'OFF'}</span>
+                    </button>
                 </div>
                 <div className="aero-toolbar-separator"></div>
                 <div className="aero-toolbar-group">
