@@ -81,11 +81,7 @@ export const Desktop: React.FC<DesktopProps> = ({ children }) => {
                     pointerEvents: 'auto',
                     boxShadow: '0 0 10px rgba(0,0,0,0.5)'
                 }}
-            >
-                {/* Crosshair lines */}
-                <div style={{ position: 'absolute', left: '50%', top: '-100vh', bottom: '-100vh', width: '1px', background: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}></div>
-                <div style={{ position: 'absolute', top: '50%', left: '-100vw', right: '-100vw', height: '1px', background: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}></div>
-            </div>
+            />
 
             {/* Taskbar / Static Controls */}
             {children}

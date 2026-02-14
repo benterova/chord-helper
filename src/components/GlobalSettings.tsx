@@ -17,7 +17,7 @@ export const GlobalSettings: React.FC = () => {
     useEffect(() => {
         return audioEngine.subscribe(id => setPlayingId(id));
     }, []);
-    const [isMetronome, setIsMetronome] = useState(false);
+    const [isMetronome, setIsMetronome] = useState(true);
     const [isLoop, setIsLoop] = useState(false);
 
     // Sync Audio State

@@ -26,21 +26,12 @@ export interface WindowState {
 interface WindowManagerContextType {
     windows: WindowState[];
     activeWindowId: string | null;
-    isLocked: boolean;
-    setIsLocked: (locked: boolean) => void;
     openWindow: (id: string, title: string, component: ReactNode, initialSize?: Size, initialPos?: Position) => void;
-    closeWindow: (id: string) => void;
-    closeAll: () => void;
-    minimizeWindow: (id: string) => void; // Re-added for compatibility
-    maximizeWindow: (id: string) => void;
     focusWindow: (id: string) => void;
-    toggleMinimize: (id: string) => void;
-    updateWindowPosition: (id: string, position: Position) => void;
-    updateWindowSize: (id: string, size: Size) => void;
     resetLayout: () => void;
-    restoreWindow: (id: string) => void;
     resizeSplit: (x: number, y: number) => void;
     splitRatio: { x: number; y: number };
+    applyTiledLayout: () => void;
 }
 
 const WindowManagerContext = createContext<WindowManagerContextType | undefined>(undefined);
@@ -57,7 +48,6 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
     const [windows, setWindows] = useState<WindowState[]>([]);
     const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
     const [nextZIndex, setNextZIndex] = useState(100);
-    const [isLocked, setIsLocked] = useState(true); // Default to locked layout
     const [splitRatio, setSplitRatio] = useState({ x: 0.6, y: 0.58 }); // Default split point (percentages) based on user preference
 
     const resizeSplit = useCallback((x: number, y: number) => {
@@ -79,7 +69,6 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
             if (count === 0) return prevWindows;
 
             const topBarHeight = 60; // Exact height of GlobalSettings bar from Desktop.tsx
-            const spacing = 0; // Touching windows (0px gap)
             const availableWidth = window.innerWidth;
             const availableHeight = window.innerHeight - topBarHeight;
 
@@ -139,46 +128,20 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
         });
     }, [splitRatio]);
 
-    // Apply tiling when locked, or when windows change while locked
-    useEffect(() => {
-        if (isLocked) {
-            applyTiledLayout();
-        }
-    }, [isLocked, applyTiledLayout]); // We need to be careful with dependencies to avoid infinite loops. 
-    // Ideally we want to trigger this when isOpen or isMinimized changes.
-    // But `windows` is in the dependency if we include it. 
-    // Let's rely on a separate effect responding to specific window changes or just generally?
-
-    // Better approach: Listen to structural changes.
-    // The problem is `setWindows` changes `windows`.
-    // We can use a ref or check if layout actually needs changing?
-    // Or just run it when `isLocked` becomes true.
-    // And attach a listener for Open/Close/Minimize actions? 
-    // Actually, let's just make the actions trigger it if locked.
-
-    // HOWEVER, we also need to handle window resize events.
+    // Apply tiling when windows change or resize
     useEffect(() => {
         const handleResize = () => {
-            if (isLocked) {
-                applyTiledLayout();
-            }
+            applyTiledLayout();
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [isLocked, applyTiledLayout]);
+    }, [applyTiledLayout]);
 
-    // We also want to re-tile if a window is opened, closed, or minimized WHILE locked.
-    // We can modify the actions (open/close/min) to call applyTiledLayout if locked.
-    // But `applyTiledLayout` depends on current state.
-    // State updates are async.
-    // So we might need to useEffect on `windows.map(w => w.id + w.isOpen + w.isMinimized).join(',')`
-    // to detect structural changes.
+    // Re-tile if a window is opened, closed, or minimized
     const windowsStructureHash = windows.map(w => `${w.id}:${w.isOpen}:${w.isMinimized}`).join('|');
     useEffect(() => {
-        if (isLocked) {
-            applyTiledLayout();
-        }
-    }, [isLocked, windowsStructureHash, applyTiledLayout]);
+        applyTiledLayout();
+    }, [windowsStructureHash, applyTiledLayout]);
 
 
     const focusWindow = useCallback((id: string) => {
@@ -220,58 +183,19 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
         setActiveWindowId(id);
     }, [nextZIndex]);
 
-    const closeWindow = useCallback((id: string) => {
-        setWindows(prev => prev.map(w => w.id === id ? { ...w, isOpen: false } : w));
-    }, []);
-
-    const closeAll = useCallback(() => {
-        setWindows(prev => prev.map(w => ({ ...w, isOpen: false })));
-    }, []);
-
-    const minimizeWindow = useCallback((id: string) => {
-        setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: !w.isMinimized } : w));
-    }, []);
-
-    const maximizeWindow = useCallback((id: string) => {
-        setWindows(prev => prev.map(w => w.id === id ? { ...w, isMaximized: !w.isMaximized } : w));
-    }, []);
-
-    const updateWindowPosition = useCallback((id: string, position: Position) => {
-        setWindows(prev => prev.map(w => w.id === id ? { ...w, position } : w));
-    }, []);
-
-    const updateWindowSize = useCallback((id: string, size: Size) => {
-        setWindows(prev => prev.map(w => w.id === id ? { ...w, size } : w));
-    }, []);
-
     const resetLayout = useCallback(() => {
         // window.location.reload(); 
         // Better: Restore openness and default ish? Actually reload is best for "Reset to Default" as it re-runs initializer.
         window.location.reload();
     }, []);
 
-    const restoreWindow = useCallback((id: string) => {
-        setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: false, isOpen: true } : w));
-        focusWindow(id);
-    }, [focusWindow]);
-
     return (
         <WindowManagerContext.Provider value={{
             windows,
             activeWindowId,
-            isLocked,
-            setIsLocked,
             openWindow,
-            closeWindow,
-            closeAll,
-            minimizeWindow,
-            maximizeWindow,
             focusWindow,
-            toggleMinimize: minimizeWindow,
-            updateWindowPosition,
-            updateWindowSize,
             resetLayout,
-            restoreWindow,
             applyTiledLayout,
             splitRatio,
             resizeSplit

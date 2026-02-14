@@ -29,7 +29,7 @@ export class AudioEngineImpl {
         this.masterGain.connect(this.ctx.destination);
 
         this.metronomeGain = this.ctx.createGain();
-        this.metronomeGain.gain.value = 0; // Default off
+        this.metronomeGain.gain.value = 0.3; // Default on
         this.metronomeGain.connect(this.ctx.destination);
     }
 

@@ -55,7 +55,10 @@ export function generateProgression(root: string, mode: ScaleName, options: Gene
 
     // 3. Walk the matrix
     for (let i = 1; i < length; i++) {
-        const nextIndex = getWeightedRandom(matrix, currentIndex);
+        let nextIndex = getWeightedRandom(matrix, currentIndex);
+        if (nextIndex >= scaleChords.length) {
+            nextIndex = nextIndex % scaleChords.length;
+        }
         progressionIndices.push(nextIndex);
         currentIndex = nextIndex;
     }

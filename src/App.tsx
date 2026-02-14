@@ -16,7 +16,7 @@ const DesktopInitializer: React.FC = () => {
   useEffect(() => {
     // Calculate centered layout
     const screenW = window.innerWidth;
-    const screenH = window.innerHeight; // Use height to center vertically too if needed, but top margin is safer
+    // const screenH = window.innerHeight; // Unused
 
     // Define window sizes
     // Grid: 2 Columns, 2 Rows. Touching (0px Gap).

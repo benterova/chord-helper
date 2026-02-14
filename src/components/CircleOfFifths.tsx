@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { audioEngine } from '../lib/audio';
-import { type Chord, getChordMidiNotes } from '../lib/theory';
+import { type Chord, getChordMidiNotes, getChordNotes } from '../lib/theory';
 import { CIRCLE_OF_FIFTHS } from '../lib/constants';
 
 import { useMusicTheory } from '../lib/MusicTheoryContext';
@@ -85,8 +85,8 @@ export const CircleOfFifths: React.FC = () => {
                                 const isHovered = hoveredChord?.root === note;
                                 const isActive = root === note;
 
-                                // Pull out logic
-                                const pullOut = isHovered || isActive ? 20 : 0;
+                                // Pull out logic: Only on hover
+                                const pullOut = isHovered ? 20 : 0;
                                 const midAngle = (index * angleStep);
                                 const rad = midAngle * Math.PI / 180;
                                 const tx = pullOut * Math.cos(rad);
@@ -99,6 +99,10 @@ export const CircleOfFifths: React.FC = () => {
                                 let color = INACTIVE_COLOR;
                                 if (chordData) {
                                     color = QUALITY_COLORS[chordData.quality] || QUALITY_COLORS['unknown'];
+                                    // If this is the tonic (I), make it deeper/darker
+                                    if (isActive) {
+                                        color = adjustColor(color, -40); // Darken significantly to distinguish without raising
+                                    }
                                 }
 
                                 const darkColor = adjustColor(color, -40); // Darker side
@@ -197,29 +201,39 @@ export const CircleOfFifths: React.FC = () => {
                     position: 'absolute',
                     left: Math.min(mousePos.x + 15, containerRef.current ? containerRef.current.clientWidth - 160 : 0), // Prevent overflow right
                     top: Math.min(mousePos.y + 15, containerRef.current ? containerRef.current.clientHeight - 100 : 0), // Prevent overflow bottom
-                    width: '150px',
+                    width: '180px', // Slightly wider for layout
                     background: '#fef3c7', // Post-it yellow
                     border: '1px solid #eab308',
                     boxShadow: '2px 2px 5px rgba(0,0,0,0.2)',
-                    padding: '10px',
+                    padding: '8px 12px',
                     borderRadius: '2px', // Slight round
                     transform: 'rotate(-1deg)', // Slight tilt for "sticky note" feel
                     pointerEvents: 'none', // Don't block mouse events
                     zIndex: 100,
                     fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif', // Handwritten feel attempt
-                    color: '#4b5563'
+                    color: '#4b5563',
+                    lineHeight: '1.4'
                 }}>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px', borderBottom: '1px dashed #d1d5db', paddingBottom: '2px' }}>
-                        {hoveredChord.chordName}
+                    {/* Header: Name and Roman Numeral */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        borderBottom: '1px dashed #d1d5db',
+                        paddingBottom: '4px',
+                        marginBottom: '6px'
+                    }}>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1f2937' }}>
+                            {hoveredChord.chordName}
+                        </div>
+                        <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#4b5563' }}>
+                            {hoveredChord.roman}
+                        </div>
                     </div>
-                    <div style={{ fontSize: '0.9rem', marginBottom: '2px' }}>
-                        <strong>Roman:</strong> {hoveredChord.roman}
-                    </div>
-                    <div style={{ fontSize: '0.9rem', marginBottom: '2px' }}>
-                        <strong>Quality:</strong> {hoveredChord.quality}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontStyle: 'italic', marginTop: '4px', color: '#6b7280' }}>
-                        Notes: {getChordMidiNotes(hoveredChord).length}
+
+                    {/* Content: Notes */}
+                    <div style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#6b7280' }}>
+                        {getChordNotes(hoveredChord).join(', ')}
                     </div>
                 </div>
             )}
