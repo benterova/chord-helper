@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
+
 export interface Position {
     x: number;
     y: number;
@@ -51,14 +52,18 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
     const [nextZIndex, setNextZIndex] = useState(100);
     const [splitRatio, setSplitRatio] = useState({ x: 0.6, y: 0.58 }); // Default split point (percentages) based on user preference
 
-    const resizeSplit = useCallback((x: number, y: number) => {
+
+
+    const resizeSplit = useCallback((_x: number, y: number) => {
         // Clamp values to keep windows usable (e.g., 10% to 90%)
-        const clampedX = Math.max(0.1, Math.min(0.9, x));
+        // const clampedX = Math.max(0.1, Math.min(0.9, x)); // X is now fixed
         const clampedY = Math.max(0.1, Math.min(0.9, y));
-        setSplitRatio({ x: clampedX, y: clampedY });
-        // Tiling will update automatically via effect
+
+        // We only update Y now, keep X at default or ignored
+        setSplitRatio(prev => ({ ...prev, y: clampedY }));
     }, []);
 
+    // Tiling Logic
     // Tiling Logic
     const applyTiledLayout = useCallback(() => {
         setWindows(prevWindows => {
@@ -70,16 +75,55 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
             if (count === 0) return prevWindows;
 
             const topBarHeight = 60; // Exact height of GlobalSettings bar from Desktop.tsx
-            const availableWidth = window.innerWidth;
             const availableHeight = window.innerHeight - topBarHeight;
 
-            // Interactive Split Layout
-            // Uses splitRatio to determine the crosshair point.
+            // Check width directly for robustness during resize
+            const isMobileView = window.innerWidth < 768;
 
-            const col1W = Math.floor(availableWidth * splitRatio.x);
+            if (isMobileView) {
+                // Mobile Vertical Stack Logic
+                let currentY = topBarHeight + 10;
+                const margin = 10;
+                const width = window.innerWidth - (margin * 2);
+
+                return prevWindows.map(w => {
+                    if (!w.isOpen || w.isMinimized) return w;
+
+                    let height = w.size.height;
+                    // Optional: cap height if needed, but existing heights are okayish
+
+                    const newY = currentY;
+                    currentY += height + margin;
+
+                    return {
+                        ...w,
+                        position: { x: margin, y: newY },
+                        size: { width, height },
+                        isMaximized: false
+                    };
+                });
+            }
+
+            // Fixed Layout Logic
+            // Column 1: 600px
+            // Column 2: 320px
+            // Total: 920px
+
+            const col1W = 600;
+            const rightColW = 320;
+
+            // Row heights are still proportional or fixed? 
+            // The initializer used: 
+            // Row 1: 600px
+            // Row 2: 280px
+            // But let's keep the split ratio concept for HEIGHT if we want, or just hardcode it to match the design?
+            // The previous logic used a splitRatio.y for height. Let's keep that for vertical flexibility
+            // OR we can just hardcode the height split too if the user wants "pixel perfect" 
+            // but the prompt specifically complained about the GAP (horizontal).
+            // Let's stick to the existing vertical split logic for now to avoid changing too much at once,
+            // or better yet, match the initializer's intent: Top row is taller.
+
             const row1H = Math.floor(availableHeight * splitRatio.y);
-
-            const rightColW = availableWidth - col1W;
             const row2H = availableHeight - row1H;
 
             return prevWindows.map(w => {
@@ -99,11 +143,14 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
                 let width = 0;
                 let height = 0;
 
+                // Margins from App.tsx (startX = 20)
+                const startX = 20;
+
                 if (col === 0) {
-                    x = 0;
+                    x = startX;
                     width = col1W;
                 } else {
-                    x = col1W;
+                    x = startX + col1W; // Start immediately after col1
                     width = rightColW;
                 }
 
@@ -115,10 +162,6 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
                     height = row2H;
                 }
 
-                // If we have more rows/cols, this hardcoding might break, but for this app it's fine.
-                // Fallback for dynamic sizing if not exactly 4 windows? 
-                // The user specifically asked for this layout "default".
-
                 return {
                     ...w,
                     position: { x, y },
@@ -127,7 +170,7 @@ export const WindowManagerProvider: React.FC<{ children: ReactNode }> = ({ child
                 };
             });
         });
-    }, [splitRatio]);
+    }, [splitRatio.y]); // Check only Y split for height resizing if satisfied
 
     // Apply tiling when windows change or resize
     useEffect(() => {

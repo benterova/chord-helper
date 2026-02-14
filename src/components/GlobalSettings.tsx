@@ -38,7 +38,7 @@ export const GlobalSettings: React.FC = () => {
     const standardModes: ScaleName[] = ['ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'natural_minor', 'locrian'];
     const otherScales: ScaleName[] = ['harmonic_minor', 'melodic_minor', 'major_pentatonic', 'minor_pentatonic', 'blues'];
     return (
-        <div style={{
+        <div className="global-settings" style={{
             display: 'flex',
             alignItems: 'center',
             height: '100%',

@@ -798,10 +798,10 @@ h3 {
 
 /* --- Glass Groups & Panels --- */
 .aero-group-box {
+
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.5) 100%);
   border: 1px solid #fff;
-  box-shadow:
-    0 2px 5px rgba(0, 0, 0, 0.05),
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   border-radius: 6px;
   padding: 12px;
@@ -1128,4 +1128,185 @@ h3 {
   height: 24px;
   margin-right: 8px;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* --- Super Stylized Glass Inputs (Generator) --- */
+.aero-glass-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 50%, #e0e0e0 51%, #f5f5f5 100%);
+  border: 1px solid #707070;
+  border-radius: 20px;
+  /* Capsule shape */
+  padding: 8px 30px 8px 15px;
+  /* Extra right padding for arrow */
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+  outline: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 0 0 2px transparent;
+  /* Placeholder for focus ring */
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background-image:
+    linear-gradient(to bottom, #ffffff 0%, #f0f0f0 50%, #e0e0e0 51%, #f5f5f5 100%),
+    url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 12px center, right 10px center;
+  background-size: 100% 100%, 10px 10px;
+  background-blend-mode: normal, normal;
+  width: 100%;
+  max-width: 200px;
+}
+
+.aero-glass-select:hover {
+  background: linear-gradient(to bottom, #ffffff 0%, #f5f5f5 50%, #e8e8e8 51%, #ffffff 100%),
+    url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%230066cc%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 12px center, right 10px center;
+  background-size: 100% 100%, 10px 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 0 5px rgba(0, 150, 255, 0.4);
+  border-color: #5599ff;
+}
+
+.aero-glass-select:focus {
+  border-color: #0066cc;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.1),
+    0 0 0 2px rgba(0, 102, 204, 0.3);
+}
+
+.aero-form-row {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.aero-form-row label {
+  font-size: 12px;
+  color: #555;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .aero-taskbar {
+    height: auto;
+    padding: 6px;
+    /* Reduced further */
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Force taskbar contents to wrap and stay contained */
+  .aero-taskbar>div {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem !important;
+    /* Smaller gap */
+    width: 100%;
+  }
+
+  /* Global Settings specific wrapping */
+  .global-settings {
+    flex-wrap: wrap;
+    justify-content: center;
+    height: auto !important;
+    padding: 5px 0;
+    gap: 10px !important;
+    width: 100%;
+  }
+
+  /* Allow inputs to shrink */
+  .global-settings select {
+    min-width: 80px !important;
+    /* Override inline style */
+    max-width: 100px;
+    font-size: 11px !important;
+  }
+
+  /* Hide scaling dividers */
+  .global-settings>div[style*="width: 1px"] {
+    display: none;
+    /* Hide vertical separators on mobile */
+  }
+
+  /* Circle of Fifths SVG Scaling */
+  .circle-section svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Scale Details Grid */
+  .aero-degree-card {
+    min-width: 0;
+  }
+
+  /* Generator / LCD Container */
+  .aero-lcd-container {
+    padding: 4px;
+  }
+
+  .aero-lcd-screen {
+    padding: 10px;
+    min-height: 70px;
+  }
+
+  /* Ensure tables scroll if needed */
+  .aero-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  /* Adjust Window styling for mobile */
+  .win7-window {
+    border-radius: 6px;
+    padding: 2px;
+
+    /* Force relative positioning to stack naturally */
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: none !important;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Ensure window content doesn't overflow */
+  .window-content,
+  .win7-content-area,
+  .win7-inner-content {
+    overflow: visible !important;
+    /* Let content grow the window */
+    height: auto !important;
+  }
+
+  /* Fix specific components to auto-height */
+  .circle-section {
+    height: auto !important;
+  }
+
+  /* Ensure text is readable */
+  body {
+    font-size: 14px;
+    background-attachment: scroll;
+    overflow-x: hidden;
+    /* Prevent body scroll */
+  }
+
+  #root {
+    overflow-x: hidden;
+  }
 }

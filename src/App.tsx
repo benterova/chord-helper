@@ -22,17 +22,6 @@ const DesktopInitializer: React.FC = () => {
     document.body.style.backgroundPosition = 'center bottom';
     document.body.style.backgroundAttachment = 'fixed';
 
-    // Calculate centered layout
-    const screenW = window.innerWidth;
-    // const screenH = window.innerHeight; // Unused
-
-    // Define window sizes
-    // Grid: 2 Columns, 2 Rows. Touching (0px Gap).
-    // Column 1 Width: 600px (Circle & Progs)
-    // Column 2 Width: 320px (Details & Gen)
-    // Row 1 Height: 600px (Circle & Details) // Taller top row
-    // Row 2 Height: 280px (Progs & Gen)    // Shorter bottom row
-
     const sizes = {
       circle: { w: 600, h: 600 },
       details: { w: 320, h: 600 },
@@ -40,8 +29,8 @@ const DesktopInitializer: React.FC = () => {
       gen: { w: 320, h: 280 }
     };
 
-    const totalW = sizes.circle.w + sizes.details.w; // 920px
-    const startX = Math.max(0, (screenW - totalW) / 2);
+    // const totalW = sizes.circle.w + sizes.details.w; // 920px -> Unused
+    const startX = 20; // Fixed left margin
     const startY = 70; // Fixed top margin
 
     // Circle (Top Left)

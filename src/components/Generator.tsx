@@ -198,7 +198,7 @@ export const Generator: React.FC = () => {
                         <select
                             value={style}
                             onChange={(e) => setStyle(e.target.value as Style)}
-                            className="aero-select"
+                            className="aero-glass-select"
                         >
                             {Object.values(STYLES).map(s => {
                                 let label = styleLabels[s] || (s.charAt(0).toUpperCase() + s.slice(1));
@@ -212,7 +212,7 @@ export const Generator: React.FC = () => {
                         <select
                             value={length}
                             onChange={(e) => setLength(parseInt(e.target.value, 10))}
-                            className="aero-select"
+                            className="aero-glass-select"
                         >
                             <option value="4">4 Bars</option>
                             <option value="8">8 Bars</option>
