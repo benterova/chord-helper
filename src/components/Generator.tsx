@@ -6,6 +6,7 @@ import { audioEngine } from '../lib/audio';
 import useLocalStorage from '../hooks/useLocalStorage';
 
 import { useMusicTheory } from '../lib/MusicTheoryContext';
+import { ParticleSystem } from './ParticleSystem';
 
 // ... imports ...
 
@@ -162,14 +163,18 @@ export const Generator: React.FC = () => {
                         <span style={{ fontSize: '1.5em', transform: 'rotate(45deg)', display: 'block' }}>↻</span>
                     </button>
 
-                    <button
-                        className="aero-btn-main"
-                        title={playingId === 'generator' ? "Stop" : "Play"}
-                        onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
-                        disabled={!generatedEvents}
-                    >
-                        {playingId === 'generator' ? '■' : '▶'}
-                    </button>
+                    <div style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <ParticleSystem active={playingId === 'generator'} width={200} height={200} />
+                        <button
+                            className={`aero-btn-main ${playingId === 'generator' ? 'playing' : ''}`}
+                            style={{ position: 'relative', zIndex: 1 }}
+                            title={playingId === 'generator' ? "Stop" : "Play"}
+                            onClick={() => generatedEvents && handlePlay('generator', generatedEvents)}
+                            disabled={!generatedEvents}
+                        >
+                            {playingId === 'generator' ? '■' : '▶'}
+                        </button>
+                    </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <button

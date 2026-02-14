@@ -1,0 +1,90 @@
+body {
+    /* Dynamic Background set in JS (App.tsx) */
+    background-color: #00aeff;
+    /* background-image: url('./assets/frutiger_bg.png'); -- Moved to JS for reliability */
+    background-size: cover;
+    background-position: center bottom;
+    /* Anchor grass to bottom */
+    background-attachment: fixed;
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* Fallback gradient */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, #1e5799 0%, #2989d8 50%, #207cca 51%, #7db9e8 100%);
+    z-index: -1;
+    opacity: 0.5;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Typography */
+h1 {
+    margin: 0;
+    font-weight: 300;
+    color: #005580;
+    font-size: 1.8rem;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+h2 {
+    font-size: 1.2rem;
+    color: #006699;
+    margin-bottom: 0.5rem;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #aaddff;
+}
+
+h3 {
+    font-weight: 600;
+    color: #005580;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+
+    /* Ensure text is readable */
+    body {
+        font-size: 14px;
+        background-attachment: scroll;
+        overflow-x: hidden;
+        overflow-y: auto !important;
+        /* Force allow vertical scroll */
+        height: auto !important;
+        position: static !important;
+        /* Override potential fixed positioning from lock */
+    }
+
+    /* Override any js-added scroll lock class */
+    body[class*="scroll-lock"],
+    .antigravity-scroll-lock {
+        overflow: auto !important;
+        overflow-y: auto !important;
+        position: static !important;
+    }
+
+    #root {
+        overflow-x: hidden;
+        overflow-y: auto !important;
+        height: auto !important;
+    }
+}

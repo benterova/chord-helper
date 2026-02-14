@@ -1,0 +1,160 @@
+/* Explorer List / Tables */
+.explorer-list {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid #aaddff;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.explorer-header {
+    background: var(--list-header-bg);
+    border-bottom: 1px solid #aaddff;
+    color: #005580;
+    font-weight: 600;
+}
+
+.explorer-header>div {
+    border-right: 1px solid rgba(170, 221, 255, 0.5);
+    padding: 8px 12px;
+}
+
+.explorer-header>div:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.explorer-row {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    transition: background 0.1s;
+}
+
+.explorer-row:hover {
+    background-color: var(--list-row-hover);
+    border-bottom: 1px solid var(--list-row-hover-border);
+}
+
+.explorer-row.selected,
+.aero-list-row.selected {
+    background: linear-gradient(to bottom, #d9f2ff 0%, #b0e0ff 100%);
+    border: 1px solid #70c0ff;
+    animation: pulse-blue 2s infinite ease-in-out;
+}
+
+.col-roman {
+    font-family: 'Segoe UI Symbol', serif;
+    color: #0077aa;
+}
+
+/* === Explorer List View (Tables) === */
+.explorer-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid #d9d9d9;
+    /* Table border */
+    font-size: 0.9rem;
+    background: #fff;
+}
+
+.explorer-header {
+    display: flex;
+    background: var(--list-header-bg);
+    border-bottom: 1px solid #d9d9d9;
+    padding: 0;
+}
+
+.explorer-header>div {
+    padding: 4px 10px;
+    border-right: 1px solid #e0e0e0;
+    color: #555;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.explorer-header>div:hover {
+    background: #e0f0fa;
+}
+
+.explorer-header>div:last-child {
+    border-right: none;
+}
+
+.explorer-row {
+    display: flex;
+    border-bottom: 1px solid transparent;
+    cursor: default;
+}
+
+.explorer-row:hover {
+    background-color: var(--list-row-hover);
+    border-bottom: 1px solid #d9d9d9;
+    outline: 1px solid var(--list-row-hover-border);
+}
+
+.explorer-row>div {
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+}
+
+/* Columns */
+.col-name {
+    width: 120px;
+    color: #333;
+}
+
+.col-degree {
+    width: 80px;
+}
+
+/* Aero Tables (Readability Focused) */
+.aero-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+    background: #fff;
+    border: 1px solid #b3d9ff;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.aero-table th {
+    text-align: left;
+    padding: 6px 10px;
+    background: linear-gradient(to bottom, #f7fcff 0%, #d9f0fc 100%);
+    color: #335577;
+    font-weight: 600;
+    border-bottom: 1px solid #b3d9ff;
+    border-right: 1px solid rgba(179, 217, 255, 0.5);
+}
+
+.aero-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+.aero-table tr:last-child td {
+    border-bottom: none;
+}
+
+.aero-table tr:nth-child(even) td {
+    background: #fcfcfc;
+}
+
+.aero-table tr:hover td {
+    background: #eef8ff;
+}
+
+@media (max-width: 768px) {
+
+    /* Ensure tables scroll if needed */
+    .aero-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+}

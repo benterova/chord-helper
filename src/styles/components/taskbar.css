@@ -1,0 +1,65 @@
+/* Taskbar */
+.aero-taskbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 1000;
+
+    /* Glass Taskbar */
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 15px rgba(0, 174, 255, 0.15);
+}
+
+.aero-taskbar::after {
+    /* Gloss shine at top of taskbar */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.1) 100%);
+    pointer-events: none;
+}
+
+.taskbar-divider {
+    width: 1px;
+    height: 32px;
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.2), transparent);
+    border-right: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+    .aero-taskbar {
+        height: auto;
+        padding: 6px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Force taskbar contents to wrap and stay contained */
+    .aero-taskbar>div {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem !important;
+        width: 100%;
+    }
+
+    /* Global Settings specific wrapping */
+    .global-settings {
+        flex-wrap: wrap;
+        justify-content: center;
+        height: auto !important;
+        padding: 5px 0;
+        gap: 10px !important;
+        width: 100%;
+    }
+}

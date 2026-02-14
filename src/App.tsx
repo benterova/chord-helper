@@ -8,7 +8,7 @@ import { Generator } from './components/Generator';
 import { ScaleDetails } from './components/ScaleDetails';
 import { GlobalSettings } from './components/GlobalSettings';
 import { Header } from './components/Header';
-import './index.css';
+
 
 import frutigerBg from './assets/frutiger_bg.png';
 

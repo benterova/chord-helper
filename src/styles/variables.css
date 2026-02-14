@@ -1,0 +1,37 @@
+:root {
+    /* Frutiger Aero Palette */
+    --aero-glass-base: rgba(220, 245, 255, 0.65);
+    --aero-glass-border-inner: rgba(255, 255, 255, 0.9);
+    --aero-glass-border-outer: rgba(255, 255, 255, 0.5);
+    --aero-title-glow: #e0f7ff;
+
+    --bg-color: transparent;
+    --surface-color: #fff;
+
+    --text-primary: #0a1e29;
+    --text-secondary: #004466;
+    --accent-color: #00aeff;
+
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    /* Glossy Gradients */
+    --gloss-gradient: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.9) 0%,
+            rgba(255, 255, 255, 0.5) 45%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(255, 255, 255, 0.6) 100%);
+
+    --sidebar-gradient: linear-gradient(to right, #eef9ff 0%, #d0efff 100%);
+    --sidebar-border: #aaddff;
+
+    --list-header-bg: linear-gradient(to bottom, #f0faff 0%, #d0efff 100%);
+    --list-row-hover: #dbf4ff;
+    --list-row-hover-border: #80d4ff;
+
+    /* Windows 7 Theme Vars */
+    --win7-glass-base: rgba(200, 235, 255, 0.75);
+    /* More saturated blue base */
+    --win7-glass-border-inner: rgba(255, 255, 255, 0.7);
+    --win7-glass-border-outer: rgba(100, 160, 200, 0.8);
+    --win7-title-glow: rgba(255, 255, 255, 1);
+}

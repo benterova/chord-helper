@@ -1,0 +1,264 @@
+/* === Frutiger Aero Window === */
+.win7-window {
+    width: 90vw;
+    max-width: 1050px;
+    height: 85vh;
+
+    /* Complex Aero Glass Background */
+    background-color: var(--win7-glass-base);
+    background-image:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.15) 35%, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0) 100%),
+        /* Reflection */
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.3), transparent 70%);
+
+    border-radius: 8px;
+    box-shadow:
+        0 0 0 1px var(--win7-glass-border-inner) inset,
+        0 0 0 1px var(--win7-glass-border-outer),
+        0 10px 40px rgba(0, 0, 0, 0.6);
+
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 4px 6px 6px 6px;
+
+    animation: winOpen 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Title Bar */
+.win7-titlebar {
+    height: 26px;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    margin-bottom: 0;
+    cursor: default;
+    position: relative;
+    z-index: 10;
+}
+
+.win7-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    background: #222;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.win7-title-text {
+    color: #111;
+    text-shadow: 0 0 8px var(--win7-title-glow), 0 0 15px var(--win7-title-glow);
+    font-size: 0.9rem;
+    flex-grow: 1;
+    text-align: center;
+    margin-left: -50px;
+}
+
+/* Window Controls */
+.win7-controls {
+    display: flex;
+    gap: 0;
+    margin-right: -4px;
+}
+
+/* Base button reused for minimize/maximize */
+.win7-btn {
+    width: 28px;
+    height: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    border-bottom-color: rgba(0, 0, 0, 0.5);
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.8) 0%,
+            rgba(255, 255, 255, 0.4) 45%,
+            rgba(255, 255, 255, 0.1) 50%,
+            rgba(255, 255, 255, 0.4) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    margin-left: -1px;
+}
+
+.win7-btn:first-child {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.win7-btn:hover {
+    background: linear-gradient(to bottom, #dceefb 0%, #a8d5f6 45%, #88c6f2 50%, #a8d5f6 100%);
+    border-color: #3c7fb1;
+    z-index: 1;
+}
+
+.win7-btn.close {
+    width: 48px;
+    border-color: #b05555;
+    background: linear-gradient(to bottom, #eba0a0 0%, #d45e5e 45%, #c74848 50%, #d66464 100%);
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    margin-left: 2px;
+}
+
+.win7-btn.close:hover {
+    background: linear-gradient(to bottom, #f2c9c9 0%, #e69898 45%, #d65f5f 50%, #e07b7b 100%);
+    border-color: #8c2a2a;
+    box-shadow: inset 0 0 2px rgba(255, 200, 200, 0.8), 0 0 8px #ff5555;
+}
+
+/* Button Glyphs */
+.win7-btn.minimize::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 8px;
+    width: 10px;
+    height: 2px;
+    background: #333;
+}
+
+.win7-btn.maximize::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 8px;
+    width: 10px;
+    height: 8px;
+    border: 1px solid #333;
+    border-top-width: 2px;
+}
+
+.win7-btn.close::after {
+    content: '×';
+    position: absolute;
+    top: -3px;
+    left: 16px;
+    font-size: 17px;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Command Bar */
+.win7-command-bar {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    background: transparent;
+    padding: 0 4px;
+    margin-bottom: 4px;
+    gap: 0;
+}
+
+.win7-cmd-btn {
+    color: #1e1e1e;
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.win7-cmd-btn:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.win7-cmd-sep {
+    width: 1px;
+    height: 14px;
+    background: rgba(0, 0, 0, 0.2);
+    margin: 0 6px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Content Area */
+.win7-content-area {
+    flex: 1;
+    background-color: #fff;
+    border: 1px solid #8e8f8f;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.win7-inner-content {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    overflow: auto;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #eef9ff;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #aaddff;
+    border-radius: 6px;
+    border: 2px solid #eef9ff;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #80d4ff;
+}
+
+.window-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+@media (max-width: 768px) {
+
+    /* Adjust Window styling for mobile */
+    .win7-window {
+        border-radius: 6px;
+        padding: 2px;
+
+        /* Force relative positioning to stack naturally */
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        max-width: none !important;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Ensure window content doesn't overflow */
+    .window-content,
+    .win7-content-area,
+    .win7-inner-content {
+        overflow: visible !important;
+        /* Let content grow the window */
+        height: auto !important;
+    }
+
+    /* Strict Window Constraints */
+    .win7-window {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .win7-title-text {
+        white-space: normal !important;
+        /* Allow wrapping */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 14px !important;
+        width: 100%;
+    }
+}

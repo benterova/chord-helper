@@ -1,0 +1,59 @@
+/* Layout Containers */
+.main-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.circle-section {
+    background: var(--sidebar-gradient);
+    border-right: 1px solid var(--sidebar-border);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
+    /* Important for flex child scrolling */
+}
+
+/* Details Panel */
+.details-panel {
+    padding: 15px 25px;
+    background: #fff;
+    /* Opaque for readability */
+    overflow-y: auto;
+    min-height: 0;
+    /* Important for flex child scrolling */
+}
+
+/* Controls Header */
+.controls {
+    margin-bottom: 2rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .desktop-container {
+        padding-top: 100px !important;
+        /* Push content down below taskbar */
+        height: auto !important;
+        /* Allow scrolling content to extend */
+    }
+
+    /* Circle of Fifths SVG Scaling */
+    .circle-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        height: auto !important;
+    }
+
+    .circle-section svg {
+        max-width: 100%;
+        height: auto;
+    }
+}
