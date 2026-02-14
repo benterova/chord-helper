@@ -4,12 +4,15 @@ import { ProgressionList } from './ProgressionList'; /* Fixed import name */
 // import { Generator } from './Generator';
 import { ScaleDetails } from './ScaleDetails';
 // import '../styles/components/grid.css'; // Assuming we import this in index.css or here
+import { Clippy } from './Clippy';
 
 interface DesktopProps {
     children?: React.ReactNode; // For taskbar or other static elements
 }
 
 export const Desktop: React.FC<DesktopProps> = ({ children }) => {
+    const [showCircleTutorial, setShowCircleTutorial] = React.useState(false);
+
     return (
         <div className="desktop-container" style={{
             position: 'relative',
@@ -27,6 +30,21 @@ export const Desktop: React.FC<DesktopProps> = ({ children }) => {
                             <img src="icon_circle.png" alt="" style={{ width: 16, height: 16, marginRight: 5 }} />
                         </div>
                         <div className="win7-title-text">Circle of Fifths</div>
+                        <div style={{ marginLeft: 'auto', marginRight: '5px', display: 'flex', alignItems: 'center' }}>
+                            <button
+                                className="win7-btn"
+                                style={{
+                                    width: '16px', height: '16px', background: 'rgba(255,255,255,0.5)',
+                                    borderRadius: '50%', border: '1px solid #fff', cursor: 'pointer',
+                                    fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#004466', fontWeight: 'bold', boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                                }}
+                                onClick={() => setShowCircleTutorial(true)}
+                                title="Help"
+                            >
+                                ?
+                            </button>
+                        </div>
                     </div>
                     <div className="win7-content-area">
                         <div className="win7-inner-content">
@@ -75,6 +93,9 @@ export const Desktop: React.FC<DesktopProps> = ({ children }) => {
 
             {/* Taskbar / Static Controls */}
             {children}
+
+            {/* Tutorials */}
+            <Clippy isVisible={showCircleTutorial} onClose={() => setShowCircleTutorial(false)} variant="circle" />
         </div>
     );
 };
