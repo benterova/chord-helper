@@ -27,7 +27,7 @@ export const Generator: React.FC = () => {
     // Core State
     const [style, setStyle] = useState<Style>(STYLES.POP);
     const [length, setLength] = useState(4);
-    const [enableRhythm, setEnableRhythm] = useState(true);
+    const [enableRhythm, setEnableRhythm] = useState(false);
 
     const [generatedProgression, setGeneratedProgression] = useState<Chord[] | null>(null);
     const [generatedEvents, setGeneratedEvents] = useState<MidiEvent[] | null>(null);

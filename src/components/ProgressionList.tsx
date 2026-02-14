@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { audioEngine } from '../lib/audio';
-import { type Chord, getChordMidiNotes } from '../lib/theory';
+import { type Chord } from '../lib/theory';
 import { PROGRESSIONS } from '../lib/constants';
 import { useMusicTheory } from '../lib/MusicTheoryContext';
+import { applyRhythm, STYLES, type Style } from '../lib/engine';
+import { downloadGeneratedMidi } from '../lib/midi';
 
 export const ProgressionList: React.FC = () => {
     const { root, chords, mode } = useMusicTheory();
@@ -11,29 +13,80 @@ export const ProgressionList: React.FC = () => {
 
     const matchProgressions = PROGRESSIONS[mode] || [];
 
+    useEffect(() => {
+        return audioEngine.subscribe(id => setPlayingId(id));
+    }, []);
+
     // Helpers
     const getProgressionChords = (indices: number[]): (Chord | undefined)[] => {
         return indices.map(idx => chords.find(c => c.degree === idx));
     };
 
-    const handlePlay = async (indices: number[], id: string) => {
-        if (playingId) return;
-        setPlayingId(id);
-        const progChords = getProgressionChords(indices);
+    const getStyleFromGenre = (genre: string): Style => {
+        const g = genre.toLowerCase();
+        if (g.includes('jazz')) return STYLES.JAZZ;
+        if (g.includes('rock') || g.includes('metal')) return STYLES.ROCK;
+        if (g.includes('funk') || g.includes('r&b')) return STYLES.RNB;
+        if (g.includes('cinematic')) return STYLES.EPIC;
+        if (g.includes('dark')) return STYLES.DARK;
+        if (g.includes('bossa')) return STYLES.BOSSA;
+        if (g.includes('lofi')) return STYLES.LOFI;
+        return STYLES.POP;
+    };
 
-        for (const chord of progChords) {
-            if (chord) {
-                const notes = getChordMidiNotes(chord);
-                audioEngine.playNotes(notes, 0.8);
-                await new Promise(r => setTimeout(r, 1000));
-            }
+    const handlePlay = (progIndex: number) => {
+        const id = `prog-${progIndex}`;
+
+        if (playingId === id) {
+            audioEngine.stop();
+            return;
         }
-        setPlayingId(null);
+
+        const prog = matchProgressions[progIndex];
+        const progChords = getProgressionChords(prog.indices).filter((c): c is Chord => !!c);
+
+        if (progChords.length === 0) return;
+
+        const style = getStyleFromGenre(prog.genre);
+        // Use a default rhythm or simple chords if the genre doesn't strongly imply a rhythm?
+        // Actually, let's use the engine's applyRhythm to get consistent behavior with metronome.
+        const events = applyRhythm(progChords, style, true);
+
+        // Convert to sequence for audio engine
+        const secondsPerTick = 0.5 / 128; // Standard 120bpm assumption for conversion? No, applyRhythm output is in ticks.
+        // Wait, playProgression expects { notes, duration (seconds) }.
+        // The Generator.tsx converts mapping ticks to seconds.
+        // It uses: const secondsPerTick = 0.5 / 128;  (assuming 120bpm? 60/120 = 0.5s per beat. 128 ticks per beat.)
+
+        const sorted = [...events].sort((a, b) => a.startTime - b.startTime);
+        const sequence: { notes: number[], duration: number }[] = [];
+
+        let lastEnd = 0;
+        sorted.forEach(ev => {
+            const gap = ev.startTime - lastEnd;
+            if (gap > 0) {
+                sequence.push({ notes: [], duration: gap * secondsPerTick });
+            }
+            sequence.push({ notes: ev.notes, duration: ev.duration * secondsPerTick });
+            lastEnd = ev.startTime + ev.duration;
+        });
+
+        audioEngine.playProgression(sequence, id);
     };
 
     const handleStop = () => {
-        setPlayingId(null);
         audioEngine.stop();
+    };
+
+    const handleExport = (progIndex: number) => {
+        const prog = matchProgressions[progIndex];
+        const progChords = getProgressionChords(prog.indices).filter((c): c is Chord => !!c);
+        if (progChords.length === 0) return;
+
+        const style = getStyleFromGenre(prog.genre);
+        const events = applyRhythm(progChords, style, true); // Export with rhythm
+
+        downloadGeneratedMidi(prog.name, events, root, mode, style);
     };
 
     // New Aero Icons
@@ -43,29 +96,38 @@ export const ProgressionList: React.FC = () => {
         Music: <span style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.2))' }}>🎵</span>
     };
 
+    const isCurrentPlaying = selectedId !== null && playingId === `prog-${selectedId}`;
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent' }}>
 
             {/* Aero Toolbar */}
             <div className="aero-toolbar">
                 <div className="aero-toolbar-group">
-                    <button className="aero-toolbar-btn" onClick={() => selectedId !== null && handlePlay(matchProgressions[selectedId].indices, `prog-${selectedId}`)} disabled={selectedId === null}>
-                        <span style={{ color: '#00cc00', fontSize: '1.2em' }}>{Icons.Play}</span>
-                        <span>Play</span>
-                    </button>
-                    <button className="aero-toolbar-btn" onClick={handleStop}>
-                        <span style={{ color: '#cc0000', fontSize: '1.2em' }}>{Icons.Stop}</span>
-                        <span>Stop</span>
-                    </button>
+                    {isCurrentPlaying ? (
+                        <button className="aero-toolbar-btn" onClick={handleStop}>
+                            <span style={{ color: '#cc0000', fontSize: '1.2em' }}>{Icons.Stop}</span>
+                            <span>Stop</span>
+                        </button>
+                    ) : (
+                        <button
+                            className="aero-toolbar-btn"
+                            onClick={() => selectedId !== null && handlePlay(selectedId)}
+                            disabled={selectedId === null}
+                        >
+                            <span style={{ color: selectedId !== null ? '#00cc00' : '#888', fontSize: '1.2em' }}>{Icons.Play}</span>
+                            <span>Play</span>
+                        </button>
+                    )}
                 </div>
                 <div className="aero-toolbar-separator"></div>
                 <div className="aero-toolbar-group">
-                    <button className="aero-toolbar-btn" disabled>
-                        <span style={{ fontSize: '1.2em' }}>💾</span>
-                        <span>Save</span>
-                    </button>
-                    <button className="aero-toolbar-btn" disabled>
-                        <span style={{ fontSize: '1.2em' }}>📤</span>
+                    <button
+                        className="aero-toolbar-btn"
+                        onClick={() => selectedId !== null && handleExport(selectedId)}
+                        disabled={selectedId === null}
+                    >
+                        <span style={{ fontSize: '1.2em', opacity: selectedId !== null ? 1 : 0.5 }}>📤</span>
                         <span>Export</span>
                     </button>
                 </div>
@@ -89,7 +151,7 @@ export const ProgressionList: React.FC = () => {
                             key={idx}
                             className={`aero-list-row ${isSelected ? 'selected' : ''}`}
                             onClick={() => setSelectedId(idx)}
-                            onDoubleClick={() => handlePlay(prog.indices, `prog-${idx}`)}
+                            onDoubleClick={() => handlePlay(idx)}
                         >
                             <div className="aero-list-icon">
                                 {isPlaying ? <span className="pulse-anim">🔊</span> : Icons.Music}
