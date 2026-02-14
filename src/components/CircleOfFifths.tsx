@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { audioEngine } from '../lib/audio';
 import { type Chord, getChordMidiNotes, getChordNotes } from '../lib/theory';
 import { CIRCLE_OF_FIFTHS, NOTES, MODE_DISPLAY_NAMES, type ScaleName } from '../lib/constants';
@@ -180,13 +181,10 @@ export const CircleOfFifths: React.FC = () => {
     }, [customSequence]);
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (containerRef.current) {
-            const rect = containerRef.current.getBoundingClientRect();
-            setMousePos({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            });
-        }
+        setMousePos({
+            x: e.clientX,
+            y: e.clientY
+        });
     };
 
     // --- Paths ---
@@ -735,10 +733,10 @@ export const CircleOfFifths: React.FC = () => {
             </div>
 
             {/* Sticky Note Tooltip - Now Aero Glass Popover */}
-            {
-                hoveredChord && (
+            {/* Sticky Note Tooltip - Now Aero Glass Popover */
+                hoveredChord && createPortal(
                     <div style={{
-                        position: 'absolute',
+                        position: 'fixed',
                         left: Math.min(mousePos.x + 20, window.innerWidth - 160), // Clamp inside
                         top: Math.min(mousePos.y - 20, window.innerHeight - 100),
                         width: '140px',
@@ -749,7 +747,7 @@ export const CircleOfFifths: React.FC = () => {
                         padding: '8px',
                         borderRadius: '8px',
                         pointerEvents: 'none',
-                        zIndex: 100,
+                        zIndex: 9999,
                         fontFamily: '"Segoe UI", sans-serif',
                         color: '#004466',
                         transform: 'translateY(-100%)' // Tooltip above mouse
@@ -778,9 +776,9 @@ export const CircleOfFifths: React.FC = () => {
                         <div style={{ fontSize: '0.7rem', color: '#aaa', fontStyle: 'italic' }}>
                             {isRecording ? 'Click to Add' : 'Click to Play'}
                         </div>
-                    </div>
-                )
-            }
+                    </div>,
+                    document.body
+                )}
         </div >
     );
 };
